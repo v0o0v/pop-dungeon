@@ -1,0 +1,18 @@
+# OMC 툴링 상태
+.omc/
+
+# OS
+Thumbs.db
+.DS_Store
+desktop.ini
+
+# 에디터
+.vscode/
+.idea/
+*.swp
+
+# Node
+node_modules/
+
+# 로그/임시
+*.log

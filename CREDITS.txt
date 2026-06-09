@@ -1,0 +1,32 @@
+팡팡 던전 (Pop Dungeon) — 크레딧 / 라이선스
+============================================================
+
+■ 게임 코드
+  - game.js, data.js : 오리지널 (제작: 본 프로젝트)
+
+■ 엔진 / 라이브러리 (vendored, 전부 로컬 · 오프라인 동작)
+  - Phaser 4.1.0            MIT License   (engine/phaser.min.js, engine/phaser.LICENSE.txt)
+  - Tone.js v15            MIT License   (engine/tone.js, engine/tone.LICENSE.txt)
+  - VectorForge            web-game-builder 엔진 (절차 벡터 그래픽 생성기)
+  - SoundForge             web-game-builder 엔진 (Tone.js 기반 절차 사운드 엔진)
+  - AbilityKit             web-game-builder 엔진 (능력/스킬 데이터 런타임)
+  - JoystickKit            web-game-builder 엔진 (가상 조이스틱)
+  - MobileHarness          web-game-builder 엔진 (모바일 웹뷰 스케일/터치/오디오 언락)
+
+■ 에셋 (그래픽 · 사운드)
+  - 모든 캐릭터/적/보스/탄알/아이템/이펙트 스프라이트 : VectorForge 로 코드 생성 (절차적, CC0)
+  - 모든 BGM/효과음 : SoundForge(Tone.js) 로 스케일·진행에서 절차 합성 (오리지널, CC0)
+  - 오디오 파일 0개 · 외부 이미지 0개 (전부 코드 생성)
+
+■ IP 안전 (저작권/상표)
+  - 엔터더건전(Enter the Gungeon) 등 어떤 상용 게임의 스프라이트·사운드·폰트·고유명도
+    사용하지 않음. 차용한 것은 장르 관용 메카닉(닷지롤 무적프레임·탄막 회피·방클리어·
+    아이템 시너지·층 진행)뿐이며, 이는 저작권 대상이 아님.
+  - 게임 제목('팡팡 던전 / Pop Dungeon'), 직업명('팝거너'), 적/보스/아이템/스킬 이름은
+    전부 오리지널 명명.
+
+■ 폰트
+  - 시스템 기본 폰트(sans-serif / monospace)만 사용. 번들 폰트 없음.
+
+라이선스 요약: 본 게임의 자체 코드와 절차 생성 에셋은 CC0 로 배포 가능.
+번들된 Phaser·Tone.js 는 각각 MIT(상기 라이선스 파일 참조).

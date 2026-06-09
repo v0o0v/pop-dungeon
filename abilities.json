@@ -1,0 +1,181 @@
+{
+  "version": 1,
+  "meta": {
+    "slug": "pop-dungeon",
+    "tier": 3,
+    "class": "pop-gunner",
+    "className": "팝거너",
+    "originalityNote": "전 능력 절차 설계 오리지널 — 어떤 게임의 고유 스킬명/수치도 인용하지 않음. 장르 관용 메카닉(닷지롤 무적·궁극기·자원/쿨다운)만 차용."
+  },
+  "resources": [
+    {
+      "id": "energy",
+      "name": "기력",
+      "max": 100,
+      "start": 100,
+      "startFull": true,
+      "regen": 9,
+      "rechargeDelay": 1
+    }
+  ],
+  "abilities": [
+    {
+      "id": "dodge_roll",
+      "name": "팡 구르기",
+      "kind": "movement",
+      "input": "instant",
+      "slot": "dodge",
+      "cooldown": 1.05,
+      "charges": 2,
+      "effect": {
+        "iframes": 0.36,
+        "dashDistance": 150,
+        "dashSpeed": 560
+      },
+      "role": "mobility",
+      "tags": [
+        "mobility",
+        "dodge"
+      ],
+      "grantsVerb": "dodge",
+      "budget": 8,
+      "flavor": "전반 무적프레임으로 탄막을 통째로 통과한다. 엔터더건전식 닷지롤.",
+      "visual": {
+        "silhouette": "통통한 잔상이 도넛처럼 번지는 원형 롤",
+        "material": "반투명 청록 모션블러+흰 림",
+        "palette": "#5ef0d6/#2fd0bc/#ffffff",
+        "focal_motif": "굴러가는 잔상 3겹"
+      }
+    },
+    {
+      "id": "pop_nova",
+      "name": "팡 노바",
+      "kind": "active",
+      "input": "instant",
+      "slot": "skill1",
+      "resource": "energy",
+      "cost": 35,
+      "cooldown": 5,
+      "effect": {
+        "damage": 45,
+        "radius": 150,
+        "knockback": 260
+      },
+      "role": "burst",
+      "tags": [
+        "burst",
+        "aoe"
+      ],
+      "budget": 12,
+      "flavor": "주위로 팡! 하고 퍼지는 충격파. 탄막에 둘러싸였을 때 탈출구를 연다.",
+      "visual": {
+        "silhouette": "사방으로 퍼지는 링 충격파",
+        "material": "노랑→주황 글로우 링",
+        "palette": "#fff3a0/#ffb13a/#ff7a3a",
+        "focal_motif": "확장하는 이중 링"
+      }
+    },
+    {
+      "id": "turbo_pop",
+      "name": "터보 팝",
+      "kind": "active",
+      "input": "instant",
+      "slot": "skill2",
+      "resource": "energy",
+      "cost": 30,
+      "cooldown": 8,
+      "effect": {
+        "duration": 4,
+        "fireRateMult": 1.8
+      },
+      "maxStacks": 1,
+      "role": "sustain",
+      "tags": [
+        "firepower"
+      ],
+      "budget": 12,
+      "flavor": "잠깐 발사 속도가 폭발한다. 보스 페이즈 전환 직후 화력 집중.",
+      "visual": {
+        "silhouette": "총구 주위 회전 가속 링",
+        "material": "청록 스파크 트레일",
+        "palette": "#6ff0ff/#2fd0bc/#ffffff",
+        "focal_motif": "가속 회오리"
+      }
+    },
+    {
+      "id": "golden_storm",
+      "name": "황금 팝 폭풍",
+      "kind": "ultimate",
+      "input": "instant",
+      "slot": "ult",
+      "resource": "energy",
+      "cost": 100,
+      "cooldown": 30,
+      "effect": {
+        "damage": 30,
+        "duration": 5,
+        "orbitalCount": 8
+      },
+      "role": "burst",
+      "tags": [
+        "ultimate",
+        "aoe"
+      ],
+      "budget": 30,
+      "flavor": "황금 탄알 8발이 나를 돌며 닿는 모든 적을 분쇄한다. 위기 탈출 + 청소기.",
+      "visual": {
+        "silhouette": "플레이어를 도는 8개 오비탈 탄",
+        "material": "금빛 글로우 구체",
+        "palette": "#fff6c0/#ffcf3a/#d98a1f",
+        "focal_motif": "회전하는 황금 고리"
+      }
+    },
+    {
+      "id": "pop_mastery",
+      "name": "팝건 숙련",
+      "kind": "passive",
+      "input": "passive",
+      "effect": {
+        "flatDamage": 2
+      },
+      "role": "core",
+      "tags": [
+        "firepower"
+      ],
+      "budget": 6,
+      "flavor": "팝건을 오래 다뤄 기본 화력이 단단하다.",
+      "visual": {
+        "silhouette": "총열에 새겨진 별 마크",
+        "material": "에나멜 도트",
+        "palette": "#ffd34a/#ffffff",
+        "focal_motif": "작은 별 1개"
+      }
+    },
+    {
+      "id": "eagle_eye",
+      "name": "매의 눈",
+      "kind": "passive",
+      "input": "passive",
+      "effect": {
+        "critChance": 0.1,
+        "critBonusDamage": 6
+      },
+      "role": "core",
+      "tags": [
+        "crit"
+      ],
+      "budget": 6,
+      "flavor": "10% 확률로 약점에 명중해 추가 피해.",
+      "visual": {
+        "silhouette": "조준 십자선 위 작은 눈",
+        "material": "라인아트 글로우",
+        "palette": "#9cff7a/#ffffff",
+        "focal_motif": "타깃 십자선"
+      }
+    }
+  ],
+  "balanceConfig": {
+    "inputBudgetMobile": 4,
+    "multCap": 2
+  }
+}
