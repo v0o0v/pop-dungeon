@@ -14,5 +14,15 @@ desktop.ini
 # Node
 node_modules/
 
+# Capacitor www 빌드 산출물 (scripts/build-www.mjs 생성)
+www/
+
+# Android 빌드 산출물 (android/ 자체는 커밋, 빌드 결과물만 제외)
+android/.gradle/
+android/app/build/
+android/build/
+android/local.properties
+android/.idea/
+
 # 로그/임시
 *.log

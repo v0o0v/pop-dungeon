@@ -1,0 +1,21 @@
+{
+  "name": "pop-dungeon",
+  "version": "0.1.0",
+  "description": "팡팡 던전 — Capacitor Android 앱",
+  "private": true,
+  "scripts": {
+    "build:www": "node scripts/build-www.mjs",
+    "cap:sync": "npx cap sync android",
+    "cap:open": "npx cap open android",
+    "dev": "python -m http.server 8777"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.0.2",
+    "@capacitor/core": "^6.2.0",
+    "@capacitor/splash-screen": "^6.0.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.2.0"
+  }
+}
