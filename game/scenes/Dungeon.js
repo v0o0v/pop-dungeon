@@ -218,9 +218,19 @@
       return room.center();
     },
 
-    // ── 카메라 경계를 현재 방 outer rect 로(L6c 가 복도 포함으로 정교화) ─────────────
-    applyCameraBounds: function (room) {
-      this.cameras.main.setBounds(room.ox, room.oy, room.ow, room.oh);
+    // ── (L6c) 카메라 경계를 현재 방 outer rect + 복도 여백 포함으로. 전환 시 펄스 연출 ──
+    //   pan=true(방 전환): 가벼운 줌 펄스로 전환을 알린다(픽셀 정합 위해 즉시 복귀).
+    applyCameraBounds: function (room, pan) {
+      var cam = this.cameras.main;
+      // 복도가 방 밖으로 살짝 보이도록 경계를 1타일 확장(전환 시 인접 통로 가시)
+      cam.setBounds(room.ox - TILE, room.oy - TILE, room.ow + TILE * 2, room.oh + TILE * 2);
+      if (pan) {
+        // 줌 펄스(0.92→1.0) — 부드러운 방 전환 피드백. roundPixels 유지.
+        cam.zoomTo ? cam.zoomTo(1, 180, 'Sine.easeOut', true) : null;
+        cam.setZoom(0.96);
+        this.tweens.add({ targets: cam, zoom: 1, duration: 180, ease: 'Sine.out' });
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('descend');
+      }
     },
 
     // ── (L6b) 복도 바닥 베이크 — 방 사이 gap 을 잇는 walkable 경로(콜라이더 없음) ────
@@ -279,8 +289,10 @@
       this.room = room;
       RUN.roomId = room.id;
       RUN.visited = RUN.visited || {}; RUN.visited[room.id] = true;
+      RUN.cleared = RUN.cleared || {};
       room.visited = true;
-      this.applyCameraBounds(room);
+      // (L6c) 방 전환 시 카메라 경계를 부드럽게 — bounds 전환 + 살짝 줌 펄스(픽셀 정합 유지)
+      this.applyCameraBounds(room, prev && prev !== room);
 
       var tier = Math.floor(((RUN.floor || 1) - 1) / 10);
       this.cameras.main.setBackgroundColor(PD.FLOOR_BG[tier % PD.FLOOR_BG.length]);
@@ -306,14 +318,97 @@
         }
         this.lockDoors(room, true);   // 미클리어 전투 방 — 인접 문 잠금
       } else if (room.cleared || !hasSpawns) {
-        // 안전 방(시작/보물/휴식) 또는 이미 클리어한 방 — 문 열림 유지, 재스폰 없음
+        // 안전 방(시작/보물/비밀/상점/휴식) 또는 이미 클리어한 방 — 문 열림 유지, 재스폰 없음
         if (!hasSpawns && GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.25);
         this.lockDoors(room, false);
-        if (room.kindHint === 'treasure' || room.kindHint === 'special') this.bannerShow(room.id + ' — ' + (room.kindHint === 'treasure' ? '보물방' : '특수방'), roleInt('pickup'));
+        // (L6c) 특수방 기믹 디스패치(첫 입실 1회)
+        this.enterSpecialRoom(room);
       }
       // 현재 방 카운터 미러
       this.roomEnemiesLeft = room.enemiesLeft || 0;
       this.state = 'play';
+    },
+
+    // ── (L6c) 특수방 기믹 — 보물·비밀·상점. 첫 입실 1회만(room._specialDone 가드) ──────
+    enterSpecialRoom: function (room) {
+      if (room._specialDone) return;
+      var k = room.kindHint, tpl = room.template;
+      // 보물방: 'T' 마커마다 확정 아이템/코인 드랍 연출(런 휘발)
+      if (k === 'treasure' || tpl === 'T_TREASURE') {
+        room._specialDone = true;
+        this.bannerShow('보물방 — 확정 아이템!', rampInt('gold', 3));
+        this.spawnTreasure(room);
+      }
+      // 비밀방: 별이 흔적 기믹 — 반짝임 + 스토리 조각 + 보상
+      else if (tpl === 'T_SECRET' || (room.gimmick && /secret|star|흔적/.test(room.gimmick))) {
+        room._specialDone = true;
+        this.bannerShow('비밀방 — 별이의 흔적', rampInt('arcane', 3));
+        this.spawnSecret(room);
+      }
+      // 던전 상점방: 골드 소비 구매대
+      else if (tpl === 'T_SHOP' || k === 'shop') {
+        room._specialDone = true;
+        this.bannerShow('상점 — 골드로 구매', roleInt('ui_accent'));
+        this.spawnShop(room);
+      }
+      // 휴식방: 소량 회복
+      else if (tpl === 'T_REST') {
+        room._specialDone = true;
+        var RUN = PD.RUN;
+        RUN.hp = Math.min(RUN.maxHp, RUN.hp + 1);
+        this.bannerShow('휴식 — +1 ♥', roleInt('pickup'));
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('powerup');
+      }
+    },
+
+    // 보물방: 'T' 마커 위치마다 확정 아이템 드랍(없으면 방 중심) + 코인
+    spawnTreasure: function (room) {
+      var self = this;
+      var marks = (room.markers && room.markers.T) || [];
+      var pts = marks.length ? marks.map(function (m) { return { x: room.ox + (m.c + 0.5) * TILE, y: room.oy + (m.r + 0.5) * TILE }; })
+                             : [{ x: room.bounds.x + room.bounds.w / 2, y: room.bounds.y + room.bounds.h / 2 }];
+      // 첫 보물칸은 확정 장비, 나머지는 코인(과보상 방지)
+      this.spawnItemDrop(pts[0].x, pts[0].y);
+      for (var i = 1; i < pts.length; i++) this.spawnPickup('coin', pts[i].x, pts[i].y);
+      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('powerup');
+      this.cameras.main.flash(120, 255, 220, 120);
+    },
+
+    // 비밀방: 별이 흔적 반짝임(그려진 파티클) + 스토리 조각 + 회복/코인 보상
+    spawnSecret: function (room) {
+      var RUN = PD.RUN;
+      var b = room.bounds, cx = b.x + b.w / 2, cy = b.y + b.h / 2;
+      // 반짝임 — gold 별 파티클(짧게 분출)
+      this.fxKill && this.fxKill.explode(16, cx, cy);
+      // 스토리 조각(흔적 표면 재사용 — 비밀 발견 회상)
+      this.traceShow('별이의 흔적을 발견했다 — 여기 잠시 머물렀던 모양이다.');
+      RUN.storyFlags = RUN.storyFlags || {}; RUN.storyFlags['secret_' + (RUN.floor || 1) + '_' + room.id] = true;
+      // 보상: 코인 + 낮은 확률 아이템
+      for (var i = 0; i < 4; i++) this.spawnPickup('coin', cx + (rand() - 0.5) * 40, cy + (rand() - 0.5) * 40);
+      if (rand() < 0.5) this.spawnItemDrop(cx, cy);
+      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('coin');
+    },
+
+    // 던전 상점방: 'T' 마커마다 구매대 픽업(닿으면 골드 차감 후 런 아이템 획득)
+    spawnShop: function (room) {
+      var self = this, RUN = PD.RUN;
+      var marks = (room.markers && room.markers.T) || [];
+      var pts = marks.length ? marks : [{ c: Math.floor(room.cols / 2), r: Math.floor(room.rows / 2) }];
+      this.shopStands = this.shopStands || [];
+      var prices = [15, 25, 40];
+      pts.forEach(function (m, i) {
+        var x = room.ox + (m.c + 0.5) * TILE, y = room.oy + (m.r + 0.5) * TILE;
+        var stand = self.pickups.get(x, y, 'star');
+        if (!stand) return;
+        stand.setActive(true).setVisible(true).setDepth(14).setScale(1).setTint(rampInt('gold', 3));
+        if (stand.body) { stand.body.enable = true; stand.body.reset(x, y); stand.body.setCircle(11, 3, 3); }
+        stand.pkind = 'shop'; stand.price = prices[i % prices.length]; stand.life = 9999;
+        // 상점 아이템: 드랍 풀에서 1개 미리 정함
+        var pool = DROP_POOL.filter(function (it) { return it.kind === 'equipment'; });
+        stand.item = pool[Math.floor(rand() * pool.length)] || pool[0];
+        self.tweens.add({ targets: stand, y: y - 6, duration: 800, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
+        self.shopStands.push(stand);
+      });
     },
 
     // 새 층 첫 입실 막간(STORY — x1층마다 1회, story.flags 영속)
@@ -877,16 +972,20 @@
       var b = this.room.bounds;
       this.pickups.getChildren().forEach(function (pk) {
         if (!pk.active) return;
-        pk.life -= d; if (pk.life <= 0 && pk.pkind !== 'item') { pk.setActive(false).setVisible(false); if (pk.body) pk.body.enable = false; return; }
-        var dist = Phaser.Math.Distance.Between(pk.x, pk.y, p.x, p.y);
-        if (pk.pkind !== 'item' && dist < rad) {
-          var a = Phaser.Math.Angle.Between(pk.x, pk.y, p.x, p.y);
-          pk.x += Math.cos(a) * 260 * d; pk.y += Math.sin(a) * 260 * d;
-        } else if (pk.pkind !== 'item') {
-          pk.setVelocity(pk.body.velocity.x * 0.9, pk.body.velocity.y * 0.9);
+        // item(런 아이템 드랍)·shop(구매대)은 고정 — 자석/수명/클램프 제외
+        var fixed = (pk.pkind === 'item' || pk.pkind === 'shop');
+        if (!fixed) {
+          pk.life -= d; if (pk.life <= 0) { pk.setActive(false).setVisible(false); if (pk.body) pk.body.enable = false; return; }
+          var dist = Phaser.Math.Distance.Between(pk.x, pk.y, p.x, p.y);
+          if (dist < rad) {
+            var a = Phaser.Math.Angle.Between(pk.x, pk.y, p.x, p.y);
+            pk.x += Math.cos(a) * 260 * d; pk.y += Math.sin(a) * 260 * d;
+          } else {
+            pk.setVelocity(pk.body.velocity.x * 0.9, pk.body.velocity.y * 0.9);
+          }
+          pk.x = Phaser.Math.Clamp(pk.x, b.x + 8, b.r - 8);
+          pk.y = Phaser.Math.Clamp(pk.y, b.y + 8, b.b - 8);
         }
-        pk.x = Phaser.Math.Clamp(pk.x, b.x + 8, b.r - 8);
-        pk.y = Phaser.Math.Clamp(pk.y, b.y + 8, b.b - 8);
       });
     },
 
@@ -898,6 +997,21 @@
       else if (k === 'energy') { this.kit.resources.energy.cur = Math.min(this.kit.resources.energy.max, this.kit.resources.energy.cur + 25); if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('coin'); }
       else if (k === 'heart') { RUN.hp = Math.min(RUN.maxHp, RUN.hp + 1); if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('powerup'); this.toastShow('+1 ♥'); }
       else if (k === 'item') { this.applyItem(pk.item); }
+      else if (k === 'shop') {
+        // (L6c) 상점 구매대 — 런 골드(coins)로 구매. 부족하면 토스트만 띄우고 유지.
+        var price = pk.price || 20;
+        if ((RUN.coins || 0) >= price) {
+          RUN.coins -= price;
+          if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('coin');
+          this.applyItem(pk.item);
+          this.toastShow('구매! -' + price + 'G', roleInt('ui_accent'));
+          pk.setActive(false).setVisible(false); if (pk.body) pk.body.enable = false;
+        } else {
+          // 구매 실패 — 구매대 유지. 중복 토스트 방지를 위해 쿨다운.
+          if (!pk._noGoldT || this.time.now - pk._noGoldT > 800) { this.toastShow('골드 부족 (' + price + 'G)', roleInt('danger')); pk._noGoldT = this.time.now; }
+        }
+        return;  // 구매대는 fxHit/소멸 공통 처리 제외
+      }
       this.fxHit.explode(4, pk.x, pk.y);
       pk.setActive(false).setVisible(false); if (pk.body) pk.body.enable = false;
     },
@@ -1016,6 +1130,7 @@
       room = room || this.room;
       if (room.cleared) return;
       room.cleared = true;
+      PD.RUN.cleared = PD.RUN.cleared || {}; PD.RUN.cleared[room.id] = true;  // (L6c) 미니맵 상태
       this.lockDoors(room, false);       // 인접 문 개방
       this.bannerShow(room.id + ' 클리어! 문 개방', roleInt('pickup'));
       if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('powerup');
@@ -1166,6 +1281,17 @@
         self.scene.stop('HUD');
         self.scene.start('Result', { win: true, floor: 100, coins: RUN.coins, kills: RUN.kills });
       });
+    },
+
+    // ── (L6c) 미니맵 상태 공급 — HUD 가 PD.Minimap.draw 에 넘긴다 ────────────────────
+    minimapState: function () {
+      return {
+        graph: this.graph,
+        current: this.room ? this.room.id : null,
+        visited: (PD.RUN && PD.RUN.visited) || {},
+        cleared: (PD.RUN && PD.RUN.cleared) || {},
+        floor: (PD.RUN && PD.RUN.floor) || 1
+      };
     },
 
     // ── 일시정지(native.js 백버튼 계약) ──────────────────────────────────────────

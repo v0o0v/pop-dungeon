@@ -21,12 +21,20 @@
       this.joy = JoystickKit.create(this, { move: { zone: 'left', mode: 'floating', x: 90, y: H - 90 }, radius: 52 });
       window.PopDungeon = window.PopDungeon || {}; window.PopDungeon.joy = this.joy;
 
-      // 버튼 정의(우측 하단 엄지 영역) — dodge 가 가장 크고 손에 가깝다
+      // 버튼 정의(우측 하단 엄지 영역) — dodge 가 가장 크고 손에 가깝다.
+      // (L6c) 스킬 슬롯(skill1/skill2/ult)은 SAVE.skills.loadout 으로 동적화 — 마을 스킬트리에서
+      //   장착한 능력으로 매핑(미설정 시 기본 능력). dodge 는 고정.
+      var loadout = (PD.SAVE && PD.SAVE.skills && PD.SAVE.skills.loadout) || {};
+      var ABDB = (window.POP_ABILITIES && window.POP_ABILITIES.abilities) || [];
+      function abMeta(id) { for (var i = 0; i < ABDB.length; i++) if (ABDB[i].id === id) return ABDB[i]; return null; }
+      function slotAbility(slot, fallback) { return loadout[slot] || fallback; }
+      function slotLabel(id, fallback) { var a = abMeta(id); return (a && (a.icon || a.glyph)) || fallback; }
+      var s1 = slotAbility('skill1', 'pop_nova'), s2 = slotAbility('skill2', 'turbo_pop'), su = slotAbility('ult', 'golden_storm');
       this.buttons = [
         { id: 'dodge', x: W - 64, y: H - 70, r: 40, label: '↻', color: rampInt('hero', 2), ability: 'dodge_roll' },
-        { id: 'skill1', x: W - 142, y: H - 92, r: 28, label: '✦', color: rampInt('gold', 2), ability: 'pop_nova' },
-        { id: 'skill2', x: W - 150, y: H - 158, r: 26, label: '▲', color: rampInt('torch', 2), ability: 'turbo_pop' },
-        { id: 'ult', x: W - 78, y: H - 156, r: 26, label: '◆', color: roleInt('pickup'), ability: 'golden_storm' }
+        { id: 'skill1', x: W - 142, y: H - 92, r: 28, label: slotLabel(s1, '✦'), color: rampInt('gold', 2), ability: s1 },
+        { id: 'skill2', x: W - 150, y: H - 158, r: 26, label: slotLabel(s2, '▲'), color: rampInt('torch', 2), ability: s2 },
+        { id: 'ult', x: W - 78, y: H - 156, r: 26, label: slotLabel(su, '◆'), color: roleInt('pickup'), ability: su }
       ];
 
       this.g = this.add.graphics().setDepth(1000);
@@ -51,6 +59,47 @@
         var mute = this.add.text(W - 16, 50, '♪', { fontFamily: 'monospace', fontSize: '20px', color: WHITE }).setOrigin(1, 0).setDepth(1002).setInteractive({ useHandCursor: true });
         mute.on('pointerdown', function () { var m = window.GAME_AUDIO.toggleMute(); mute.setText(m ? '♪̸' : '♪').setAlpha(m ? 0.5 : 1); });
       }
+
+      // ── (L6c) 미니맵 오버레이 — 우상단. 토글 버튼으로 표시/숨김 ─────────────────────
+      this.miniG = this.add.graphics().setScrollFactor(0).setDepth(1003);
+      this.miniBadges = [];           // 배지 텍스트 풀(재사용)
+      this.miniVisible = true;
+      this.miniToggle = this.add.text(W - 16, 80, '🗺', { fontFamily: 'monospace', fontSize: '18px', color: WHITE }).setOrigin(1, 0).setDepth(1004).setScrollFactor(0).setInteractive({ useHandCursor: true });
+      this.miniToggle.on('pointerdown', function () { self.miniVisible = !self.miniVisible; self.miniToggle.setAlpha(self.miniVisible ? 1 : 0.45); });
+    },
+
+    // 배지 텍스트 풀 — 필요 수만큼 생성·재사용, 나머지 숨김
+    miniBadgeFactory: function (badges) {
+      var self = this;
+      for (var i = 0; i < badges.length; i++) {
+        var t = this.miniBadges[i];
+        if (!t) { t = this.add.text(0, 0, '', { fontFamily: 'monospace', fontStyle: 'bold', fontSize: '9px' }).setOrigin(0.5).setScrollFactor(0).setDepth(1005); this.miniBadges[i] = t; }
+        var bd = badges[i];
+        t.setText(bd.ch).setColor('#' + (bd.col >>> 0).toString(16).padStart(6, '0')).setPosition(bd.x, bd.y).setVisible(self.miniVisible);
+      }
+      for (var j = badges.length; j < this.miniBadges.length; j++) this.miniBadges[j].setVisible(false);
+    },
+
+    // 미니맵 그리기(매 프레임 — 던전 상태에서 갱신)
+    drawMinimap: function () {
+      var dz = window.PopDungeon && window.PopDungeon.dungeon;
+      this.miniG.clear();
+      if (!this.miniVisible || !dz || typeof dz.minimapState !== 'function' || !PD.Minimap) {
+        for (var k = 0; k < this.miniBadges.length; k++) this.miniBadges[k].setVisible(false);
+        return;
+      }
+      var st = dz.minimapState();
+      if (!st.graph) return;
+      // 우상단 배치 — 폭을 먼저 추정해 originX 계산(2패스: 임시 그린 뒤 위치 보정 대신 고정 우측 정렬)
+      var self = this;
+      // 1차: 좌상단 0,0 기준으로 크기 측정용 호출은 비용↑ → Minimap.draw 가 W 반환하므로
+      // originX 를 화면폭 - 추정폭으로. 추정: cols*(CELL+GAP). 안전 여백 포함.
+      var originX = PD.DESIGN_W - 150, originY = 110;
+      PD.Minimap.draw(this.miniG, {
+        graph: st.graph, current: st.current, visited: st.visited, cleared: st.cleared,
+        originX: originX, originY: originY,
+        textFactory: function (badges) { self.miniBadgeFactory(badges); }
+      });
     },
 
     update: function () {
@@ -109,6 +158,8 @@
       this.itemText.setText(this.itemSummary());
       // 보스 이름
       this.bossNameText.setText(RUN.boss ? RUN.bossName : '');
+      // (L6c) 미니맵 갱신
+      this.drawMinimap();
     },
 
     drawTopHud: function (kit) {

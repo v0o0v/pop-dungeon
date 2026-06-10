@@ -103,11 +103,20 @@
     return 'combat';
   }
 
-  // 방을 격자 슬롯(gx,gy)에 배치 — ox/oy/bounds 재계산(Room 생성자 로직과 동일 공식)
-  function placeRoom(room, gx, gy) {
+  // 균일 슬롯 피치(층 전체 최대 방 크기 + 여백). build 가 계산해 placeRoom 에 전달한다.
+  //   방 크기가 제각각이어도 슬롯 간격이 균일해야 인접 방이 겹치지 않고(중대 결함 방지)
+  //   방 사이에 일정한 gap 이 생겨 복도가 그 사이를 지난다.
+  var GAP_TILES = 3;   // 방 사이 여백(타일) — 복도 폭+여유
+
+  // 방을 격자 슬롯(gx,gy)에 균일 피치로 배치. pitchW/pitchH 는 build 가 공급(px).
+  //   방은 슬롯 안에서 좌상단 정렬(문 좌표 계산 단순화). bounds 는 walkable bbox.
+  function placeRoom(room, gx, gy, pitchW, pitchH) {
     room.gx = gx; room.gy = gy;
-    room.ox = gx * (room.cols + 2) * TILE;   // +2: 방 사이 여백(복도 느낌 — 스파이크 동일)
-    room.oy = gy * (room.rows + 2) * TILE;
+    // 슬롯 좌상단(균일 피치) — 피치 미지정 시 폴백(per-room, 구버전 호환)
+    var px = (pitchW != null) ? pitchW : (room.cols + GAP_TILES) * TILE;
+    var py = (pitchH != null) ? pitchH : (room.rows + GAP_TILES) * TILE;
+    room.ox = gx * px;
+    room.oy = gy * py;
     room.ow = room.cols * TILE;
     room.oh = room.rows * TILE;
     // bounds: walkable bounding box(외벽 안쪽). grid 외벽이 1타일 가정이 아닐 수 있어
@@ -214,10 +223,19 @@
       order.push(rd.id);
     });
 
-    // 슬롯 좌표로 방 배치(ox/oy/bounds 확정)
+    // 균일 슬롯 피치 계산 — 층 전체 최대 방 크기 + GAP. 모든 방 동일 간격(겹침 방지).
+    var maxCols = 0, maxRows = 0;
+    Object.keys(rooms).forEach(function (id) {
+      if (rooms[id].cols > maxCols) maxCols = rooms[id].cols;
+      if (rooms[id].rows > maxRows) maxRows = rooms[id].rows;
+    });
+    var pitchW = (maxCols + GAP_TILES) * TILE;
+    var pitchH = (maxRows + GAP_TILES) * TILE;
+
+    // 슬롯 좌표로 방 배치(ox/oy/bounds 확정 — 균일 피치)
     Object.keys(slotOf).forEach(function (id) {
       var s = slotOf[id];
-      placeRoom(rooms[id], s.gx, s.gy);
+      placeRoom(rooms[id], s.gx, s.gy, pitchW, pitchH);
     });
 
     // graph 간선 → 양방향 door 연결. 배치된 슬롯의 상대 방향으로 dir 결정.
