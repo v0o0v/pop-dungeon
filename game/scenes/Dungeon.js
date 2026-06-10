@@ -537,17 +537,17 @@
       }
       defs.forEach(function (def) {
         var count = def.count || 1;
-        var type = self.resolveEnemyType(def.type);
+        var base = self.resolveEnemyType(def.type);   // 거동 base
         for (var i = 0; i < count; i++) {
           var p = nextPos();
-          self.spawnEnemy(type, p.x, p.y, floor, room);
+          self.spawnEnemy(base, p.x, p.y, floor, room, def.type);  // codexId = 원본 def.type
         }
       });
       // 권위 스폰이 비어있고 'E' 마커만 있으면(템플릿 기본) 마커 위치에 기본 적 스폰
       if (!defs.length && marks.length) {
         marks.forEach(function (m) {
           var p = { x: room.ox + (m.c + 0.5) * TILE, y: room.oy + (m.r + 0.5) * TILE };
-          self.spawnEnemy('slime', p.x, p.y, floor, room);
+          self.spawnEnemy('slime', p.x, p.y, floor, room, 'shard_drifter');
         });
       }
       this.roomEnemiesLeft = room.enemiesLeft || 0;
@@ -555,16 +555,38 @@
 
     // floors 데이터의 적 타입명을 런타임 ENEMY_TYPES 키로 매핑(미지원 타입 폴백)
     resolveEnemyType: function (name) {
-      if (ENEMY_TYPES[name]) return name;
-      // Phase 3 데이터가 쓰는 서사적 적명 → 코어 4타입 폴백(L6 통합 시 확장)
-      var map = {
-        shard_drifter: 'slime', shard_darter: 'bat', shard_turret: 'turret', shard_orb: 'orb',
-        drifter: 'slime', darter: 'bat'
+      if (ENEMY_TYPES[name]) return name;   // 이미 base 키면 그대로
+      // ── shard_* codex id → ENEMY_TYPES base 별칭(P3-A 핸드오프) ──────────────────
+      //   floors spawns[].type 은 codex.data.js 의 서사적 적 id 를 쓴다. 런타임 base
+      //   4종(slime=chase / bat=dart / turret=shooter / orb=spreader·ring)에 거동 의미로 매핑.
+      //   매핑 근거(codex desc): drifter=느리게 떠돎→chase, darter=쏘듯 빠름→dart,
+      //   splitter=갈라짐(분열 base 부재→근접 chase), weeper=우는(원거리 탄)→shooter,
+      //   lightshy=빛 꺼림(링 산포)→spreader, faller=떨어짐(불규칙)→dart.
+      var SHARD_BASE = {
+        shard_drifter: 'slime',
+        shard_darter: 'bat',
+        shard_splitter: 'slime',
+        shard_weeper: 'turret',
+        shard_lightshy: 'orb',
+        shard_faller: 'bat'
       };
-      return map[name] || 'slime';
+      if (SHARD_BASE[name]) return SHARD_BASE[name];
+      // boss_* 는 보스 템플릿 방→spawnBoss(BOSS_TABLE)로 처리되어 여기 안 옴.
+      // 방어적: 혹 일반 방이 boss_ 를 일반 적으로 스폰하면 강한 base(orb)로 폴백.
+      if (/^boss_/.test(name)) return 'orb';
+      return 'slime';   // 미지 타입 안전 폴백
     },
 
-    spawnEnemy: function (type, x, y, floor, room) {
+    // 도감 발견 기록 — RUN.codexSeen.enemies[codexId] 누적(commitRun 이 SAVE.codex 로 병합).
+    markCodexSeen: function (codexId) {
+      if (!codexId) return;
+      var RUN = PD.RUN;
+      RUN.codexSeen = RUN.codexSeen || { enemies: {}, items: {} };
+      RUN.codexSeen.enemies = RUN.codexSeen.enemies || {};
+      RUN.codexSeen.enemies[codexId] = (RUN.codexSeen.enemies[codexId] || 0) + 1;
+    },
+
+    spawnEnemy: function (type, x, y, floor, room, codexId) {
       var def = ENEMY_TYPES[type];
       var e = this.enemies.get(x, y, def.tex);
       if (!e) return null;
@@ -572,6 +594,9 @@
       if (e.body) { e.body.enable = true; e.body.reset(x, y); e.body.setCircle(def.radius, (def.tex === 'bat' ? 6 : 4), (def.tex === 'bat' ? 6 : 4)); }
       if (def.anim) e.play(def.anim);
       e.etype = type; e.def = def; e.isBoss = false; e.room = room || this.room;
+      e.codexId = codexId || type;   // 도감 발견 추적용 원본 codex id(없으면 base)
+      // 도감 발견: 입실 스폰 시 1회 기록(commitRun 이 SAVE.codex.enemies 로 병합)
+      this.markCodexSeen(e.codexId);
       e.maxHp = Math.round(def.hp * (1 + ((floor || 1) - 1) * 0.18));
       e.hp = e.maxHp;
       e.speed = def.speed * (1 + ((floor || 1) - 1) * 0.015);
@@ -602,6 +627,10 @@
       e.speed = 30 + idx * 3;
       e.patternT = 1200; e.patternI = 0; e.phase = 0; e.moveDir = 1; e.spawnGrace = 600;
       e.baseY = y;
+      // 보스 codex id — 방 spawnDefs 의 boss_* type(있으면) 사용, 없으면 etype 폴백
+      var bossSpawn = (room.spawnDefs || []).filter(function (s) { return /^boss_/.test(s.type); })[0];
+      e.codexId = (bossSpawn && bossSpawn.type) || 'boss';
+      this.markCodexSeen(e.codexId);
       e.setAlpha(0.2); this.tweens.add({ targets: e, alpha: 1, duration: 500 });
       room.enemiesLeft = 1; this.roomEnemiesLeft = 1;
       PD.RUN.boss = e; PD.RUN.bossName = bdef.name; PD.RUN.bossHpFrac = 1;
