@@ -133,4 +133,4 @@
 
 - 추후 능력 추가: §3 카탈로그에 레코드(+`visual.*`) 등록 → 트리에 `unlock` 노드+edge 추가 → 린터 재실행. 삭제는 §3 + 트리 노드/edge + sets member + requires 동시 정리 후 린트.
 - 런타임 배선은 `game/abilities-wiring.js` 에만 — Game.js/엔진 수정 금지(파일 경계, 플랜 부록).
-- recomputeStats 입력 계약(worker-l4)이 확정되면 §5/§9 패시브 노드 effect 키를 그 네임스페이스로 재정렬한다(트리 구조·간선은 키 무관 → 영향 없음).
+- recomputeStats 입력 계약(worker-l4)은 **확정·반영 완료** — `getPassiveEffects(learnedNodes)` 가 `damage→flatDamage`·`projectiles→extraProjectiles` 정규화로 계약 키를 맞춘다. 코어 패시브(pop_mastery·eagle_eye)는 stats.js 베이스에 반영돼 이중 계산 방지로 제외. 헤드리스 통합 테스트(엔진+stats.js+save.js+wiring 실로드)로 검증 완료.

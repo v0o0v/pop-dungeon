@@ -222,11 +222,16 @@
   //       critBonusDamage·starlightOnKill·spreadAngle·pierce) 는 키 그대로 전달.
   //   ※ critChance/critBonusDamage/starlightOnKill 은 stats.js applyEffect 가 아직
   //     인식하지 않으면 무시되지만(무해), L4 가 키를 추가하면 즉시 반영된다(전방 호환).
+  // stats.js applyEffect 가 인식하지 않는 키(worker-l4 Q2 확정) — 패시브 stat 스트림에서 제외.
+  //   critChance·critBonusDamage: L4 가 패시브 사용 금지 명시(베이스 하드코딩) → critFromPassives 보조 경로로만.
+  //   starlightOnKill: 별빛 자원 충전용(런타임 onKill) → starlightPerKill 보조 경로로만.
+  var NON_STAT_KEYS = { critChance: 1, critBonusDamage: 1, starlightOnKill: 1 };
   function normalizePassiveEffect(e) {
     if (!e) return null;
     var out = {};
     for (var k in e) {
       if (!e.hasOwnProperty(k)) continue;
+      if (NON_STAT_KEYS[k]) continue;   // stats.js 미지원 키는 stat 스트림에서 제외(계약 클린)
       // 계약 정규화(worker-l4 확정 키): 본 데이터 키 → stats.js applyEffect 어휘
       if (k === 'projectiles') out.extraProjectiles = (out.extraProjectiles || 0) + e[k];
       else if (k === 'damage')  out.flatDamage      = (out.flatDamage || 0) + e[k];
@@ -236,35 +241,42 @@
   }
   // 코어 패시브(시작 보유) — stats.js 베이스에 이미 반영(이중 계산 방지로 stat 합산 제외)
   var CORE_PASSIVES = ['pop_mastery', 'eagle_eye'];
-  function getPassiveEffects(learnedNodes) {
+
+  // 학습 노드 + grants 패시브의 **원본 effect** 수집(정규화 전). 보조 헬퍼가 비-stat 키를 읽는다.
+  //   코어 패시브(베이스 반영)는 제외.
+  function collectRawPassiveEffects(learnedNodes) {
     learnedNodes = learnedNodes || {};
     var out = [];
-    // (1)(2) 학습된 노드 + grants 패시브 (코어 패시브는 베이스에 반영돼 제외)
     treeNodes().forEach(function (n) {
       if (!learnedNodes[n.id]) return;
-      if (n.effect) { var nf = normalizePassiveEffect(n.effect); if (nf) out.push({ id: n.id, effect: nf }); }
+      if (n.effect) out.push({ id: n.id, effect: n.effect });
       (n.grants || []).forEach(function (gid) {
         var ab = BY_ID[gid];
-        if (ab && ab.kind === 'passive' && ab.effect) {
-          var gf = normalizePassiveEffect(ab.effect);
-          if (gf) out.push({ id: gid, effect: gf });
-        }
+        if (ab && ab.kind === 'passive' && ab.effect) out.push({ id: gid, effect: ab.effect });
       });
     });
     return out;
   }
-  // 별빛 충전량(starlightOnKill 합) — recomputeStats 가 키를 흘리지 않을 수 있으므로
-  // 본 모듈이 learnedNodes 에서 직접 합산해 stats.starlightOnKill 보강에 쓴다.
+  // recomputeStats 소스[4] 입력 계약(worker-l4): 정규화·stat 키만 추린 [{effect}] 반환.
+  function getPassiveEffects(learnedNodes) {
+    var out = [];
+    collectRawPassiveEffects(learnedNodes).forEach(function (p) {
+      var nf = normalizePassiveEffect(p.effect);
+      if (nf && Object.keys(nf).length) out.push({ id: p.id, effect: nf });
+    });
+    return out;
+  }
+  // 별빛 충전량(starlightOnKill 합) — stats 스트림 밖이라 원본에서 직접 합산.
   function starlightPerKill(learnedNodes) {
     var sum = 0;
-    getPassiveEffects(learnedNodes).forEach(function (p) { if (p.effect && p.effect.starlightOnKill) sum += p.effect.starlightOnKill; });
+    collectRawPassiveEffects(learnedNodes).forEach(function (p) { if (p.effect && p.effect.starlightOnKill) sum += p.effect.starlightOnKill; });
     return sum;
   }
-  // 크리 보강(critChance/critBonusDamage) — stats.js 가 base 고정값만 쓰는 경우,
-  // 씬/HUD 가 본 헬퍼로 트리 크리를 합산해 RUN.stats 에 더할 수 있다(전방 호환 보조).
+  // 크리 보강(critChance/critBonusDamage) — stats.js 베이스(0.1/6) 위에 트리 크리를 더한다.
+  //   씬/HUD 가 본 헬퍼로 합산해 RUN.stats.critChance/critBonusDamage 에 가산(L4 와 합의된 보조 경로).
   function critFromPassives(learnedNodes) {
     var add = { critChance: 0, critBonusDamage: 0 };
-    getPassiveEffects(learnedNodes).forEach(function (p) {
+    collectRawPassiveEffects(learnedNodes).forEach(function (p) {
       if (p.effect && p.effect.critChance) add.critChance += p.effect.critChance;
       if (p.effect && p.effect.critBonusDamage) add.critBonusDamage += p.effect.critBonusDamage;
     });

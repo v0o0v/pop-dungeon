@@ -48,13 +48,14 @@
 - 무기는 발사 정체성이 강해 동일 등급에서 타 슬롯보다 budget 상한 소폭 높음. lint `rarityBands` 는 슬롯 무관 통합 밴드로 설정(weapon 상단·타 슬롯 하단을 모두 포괄하는 넓은 밴드)해 거짓 경보 방지.
 
 ### 강화 (+0 ~ +9 · 실패 없음 단순형)
-- **규칙:** 각 장비는 `enhance` 블록(키별 `perLevel` 증분 + 등급별 비용 곡선)을 가진다. 강화 +N 시 effect 의 해당 키가 `base + perLevel × N` 으로 스케일된다. **실패·파괴 없음**(모바일 캐주얼 — 호딩/스트레스 회피, `UTIL-NO-FRUSTRATION`).
-- **비용 곡선(골드 + 재료):** 등급·레벨 단조 증가. `cost(N) = goldBase × (N+1) × rarityMult`, 재료는 `+1~+3` 일반재료, `+4~+6` 희귀재료, `+7~+9` 영웅재료(지역 드랍). 정확 수치는 §3 각 레코드 `enhance.costCurve`.
-- **계산 위치(L4 정합 대기):** `SaveStore` 가 `effectAt(item, enh)` 로 effect 를 스케일해 `recomputeStats` 입력에 넘긴다(L4 공표 계약 준수). 본 데이터는 base effect + `enhance.perLevel` 만 정의하고, 합산 로직은 비포함(파일 경계 준수).
+- **규칙:** 각 장비는 최상위 `enhStep` 블록(강화 1단당 가산치, 계약 명칭)을 가진다. 강화 +N 시 effect 의 해당 키가 `base + enhStep[key] × N` 으로 스케일된다. **실패·파괴 없음**(모바일 캐주얼 — 호딩/스트레스 회피, `UTIL-NO-FRUSTRATION`).
+- **비용 곡선(골드 + 재료):** 등급·레벨 단조 증가. 각 장비 `enhanceCost` 블록에 `cost(N) = goldBase × (N+1) × rarityMult`, 재료는 `+1~+3` 일반재료, `+4~+6` 희귀재료, `+7~+9` 영웅재료(지역 드랍). `enhStep`(가산 보정)과 `enhanceCost`(비용 데이터)는 별개 최상위 필드.
+- **계산 위치(L4 확정 계약):** v2 `recomputeStats` 합산 순서 = 베이스 → 장비+강화(enhStep) → 마을 스탯 → 트리 패시브 → 런 아이템. `SaveStore`/recomputeStats 가 `base effect + enhStep × enh` 로 스케일한다. 본 데이터는 base effect + `enhStep` + `enhanceCost` 만 정의하고, 합산 로직은 비포함(파일 경계 준수).
+- **effect 키 명칭(L4 확정 계약):** 가산 화력 키는 `flatDamage`. 가산 키 — flatDamage·fireRateFlat·bulletSpeed·moveSpeed·maxHp·energyMax·energyRegen·skillDamage·pickupRadius·armor·contactDamage·dodgeCharges·dashDamage·luck·extraProjectiles·pierce·bounce·homing·split·bulletSize·spreadAngle(max). 곱산 키(multCap 2) — damageMult·coinMult·fireRateMult·moveSpeedMult. 런 휘발 아이템은 `volatile:true` 플래그로 구분(L4 계약: game/stats.js 가 RUN.runItems 에서 동일 effect 키로 읽음).
 
 ## §3. 아이템 카탈로그
 
-> effect 키는 `game/stats.js recomputeStats` 가 해석하는 기존 키 집합과 정합(가산 키 다수 + 곱산 2 + spreadAngle max). 신규 직접 키(`maxHpFlat`·`moveSpeedFlat`·`critChance`·`critDamage`·`visionRadius`)는 L4 v2 recomputeStats 확장 입력으로 공표받아 정합(대기 시 보수적으로 기존 키 우선).
+> effect 키는 L4 확정 계약(§2 강화 참조)의 가산/곱산 키 집합과 100% 정합 — 화력 가산은 `flatDamage`, 곱산은 `damageMult`·`coinMult`(2종, multCap 2). 6슬롯 장비는 전부 가산, 곱산은 런 휘발 부적 2종에만. 아래 표의 `화력+N` 표기는 가독용 요약이며 데이터 키는 `flatDamage`.
 
 ### A. 무기(weapon) — 팝총 개조 계보 6종
 
@@ -228,7 +229,7 @@
 
 ## §10. 빌드 라우팅 메모
 
-- 데이터 로드: `data/items.data.js` → `window.POP_ITEMS` → `game/stats.js recomputeStats` effect 디스패치. 강화 스케일(`effectAt`)·접사 롤·드랍 롤은 SaveStore(L4)·획득 런타임 소관(본 파일은 base effect + enhance.perLevel + affixPool + dropTables 데이터만).
+- 데이터 로드: `data/items.data.js` → `window.POP_ITEMS` → v2 `recomputeStats` effect 디스패치(합산 순서 베이스→장비+강화→마을스탯→트리패시브→런아이템). 강화 스케일(`base effect + enhStep × enh`)·접사 롤·드랍 롤은 SaveStore(L4)·획득 런타임 소관(본 파일은 base effect + `enhStep` + `enhanceCost` + affixPool + dropTables 데이터만).
 - 영속/휘발 경계: equipment(slot 有)·material·currency = 영속(SAVE), equipment(slot 無 = 런 부적)·consumable = 휘발(RUN). SaveStore 가 단일 게이트로 강제(L4).
 - 아이콘 핸드오프: 각 레코드 visual.* → sprite-forge(픽셀) — §7 헤더 상수(master_palette·등급 색·NW 광원) 전달.
 - IP 안전: 전 아이템명·외형 오리지널(추상 룬·젬·솔뫼 마을·별 모티프). 상용 게임 고유 아이템명/아이콘 미사용(`ip-license-guard`). STYLE `ip_redwords` 정합.

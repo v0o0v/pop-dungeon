@@ -317,56 +317,56 @@
       /* ===== G. 런 휘발 부적(equipment, slot 없음) — 줍고 죽으면 소멸 8종 ===== */
       {
         "id": "run_glassheart", "name": "유리 심장", "kind": "equipment", "rarity": "epic",
-        "effect": { "damageMult": 1.4, "maxHp": -1 }, "maxStacks": 1, "runItem": true,
+        "effect": { "damageMult": 1.4, "maxHp": -1 }, "maxStacks": 1, "volatile": true,
         "role": "payoff", "tags": ["damage", "glass", "risk"], "budget": 15,
         "flavor": "던전에서 줍는 금 간 유리 심장. 피해가 40% 늘지만 체력 1칸을 잃는다.",
         "visual": { "silhouette": "금이 간 둥근 유리 심장", "material": "투명 글래스+내부 붉은 글로우", "palette": "scarlet:#a02038/#ff8d7a", "focal_motif": "균열 하트" }
       },
       {
         "id": "run_clover", "name": "행운 클로버", "kind": "equipment", "rarity": "epic",
-        "effect": { "luck": 2, "coinMult": 1.25 }, "maxStacks": 1, "runItem": true,
+        "effect": { "luck": 2, "coinMult": 1.25 }, "maxStacks": 1, "volatile": true,
         "role": "utility", "tags": ["luck", "economy"], "budget": 14,
         "flavor": "던전에서 줍는 네잎 클로버. 더 좋은 드랍과 25% 더 많은 던전 코인.",
         "visual": { "silhouette": "네 잎 클로버", "material": "에메랄드 글로우", "palette": "venom:#5cc23e/#c2f57e", "focal_motif": "네 잎" }
       },
       {
         "id": "run_energycore", "name": "기력 코어", "kind": "equipment", "rarity": "rare",
-        "effect": { "energyRegen": 4, "energyMax": 25 }, "runItem": true,
+        "effect": { "energyRegen": 4, "energyMax": 25 }, "volatile": true,
         "role": "enabler", "tags": ["skill", "energy"], "budget": 9,
         "flavor": "던전에서 줍는 맥동 코어. 기력 회복과 최대치를 늘려 스킬을 더 자주 쓰게 한다.",
         "visual": { "silhouette": "맥동하는 육각 코어", "material": "네온 글로우 결정", "palette": "hero:#188a72/#aef7dd", "focal_motif": "에너지 결정" }
       },
       {
         "id": "run_skillcharm", "name": "스킬 부적", "kind": "equipment", "rarity": "epic",
-        "effect": { "skillDamage": 18 }, "runItem": true,
+        "effect": { "skillDamage": 18 }, "volatile": true,
         "role": "payoff", "tags": ["skill"], "budget": 14,
         "flavor": "던전에서 줍는 룬 부적. 스킬 피해가 크게 늘어난다. 기력 코어와 함께면 스킬 빌드 완성.",
         "visual": { "silhouette": "룬이 새겨진 둥근 부적", "material": "금테+보라 룬 글로우", "palette": "arcane:#9a66e8/#d9b8ff", "focal_motif": "룬 부적" }
       },
       {
         "id": "run_splitseed", "name": "분열 씨앗", "kind": "equipment", "rarity": "epic",
-        "effect": { "split": 2 }, "runItem": true,
+        "effect": { "split": 2 }, "volatile": true,
         "role": "core", "tags": ["split", "multishot"], "budget": 14,
         "flavor": "던전에서 줍는 별조각 씨앗. 적에게 맞은 탄알이 작은 탄 2개로 갈라진다.",
         "visual": { "silhouette": "갈라지는 세 갈래 씨앗", "material": "광택 결정 파편", "palette": "arcane:#5d35a8/#9a66e8", "focal_motif": "분열 파편" }
       },
       {
         "id": "run_homingheart", "name": "유도 하트", "kind": "equipment", "rarity": "rare",
-        "effect": { "homing": 0.12 }, "runItem": true,
+        "effect": { "homing": 0.12 }, "volatile": true,
         "role": "core", "tags": ["homing", "seek"], "budget": 10,
         "flavor": "던전에서 줍는 날개 달린 하트. 탄알이 가까운 적으로 살짝 휜다.",
         "visual": { "silhouette": "작은 날개 달린 하트", "material": "분홍 글로우", "palette": "scarlet:#e83a52/#ff8d7a", "focal_motif": "유도 하트" }
       },
       {
         "id": "run_thornband", "name": "가시 띠", "kind": "equipment", "rarity": "rare",
-        "effect": { "contactDamage": 10, "armor": 1 }, "runItem": true,
+        "effect": { "contactDamage": 10, "armor": 1 }, "volatile": true,
         "role": "survival", "tags": ["defense"], "budget": 9,
         "flavor": "던전에서 줍는 가시 돋은 띠. 몸에 닿은 적이 가시에 찔리고 피격을 가끔 막는다.",
         "visual": { "silhouette": "가시 돋은 허리띠", "material": "무광 가죽+가시", "palette": "venom:#2f7a2c/#5cc23e", "focal_motif": "가시 줄" }
       },
       {
         "id": "run_bigpop", "name": "왕 팝", "kind": "equipment", "rarity": "rare",
-        "effect": { "bulletSize": 0.6, "flatDamage": 4 }, "runItem": true,
+        "effect": { "bulletSize": 0.6, "flatDamage": 4 }, "volatile": true,
         "role": "core", "tags": ["size", "damage"], "budget": 10,
         "flavor": "던전에서 줍는 큰 탄 부적. 탄알이 커지고 피해가 늘지만 속도가 살짝 준다.",
         "visual": { "silhouette": "거대한 둥근 탄", "material": "두꺼운 외곽선 풍선", "palette": "gold:#ffc63a/#fff1b8", "focal_motif": "왕방울" }
@@ -375,21 +375,21 @@
       /* ===== H. 소모품 3종 (consumable · 휘발) ===== */
       {
         "id": "c_poppotion", "name": "팡 물약", "kind": "consumable", "rarity": "common",
-        "effect": { "heal": 1 }, "cost": 6, "runItem": true,
+        "effect": { "heal": 1 }, "cost": 6, "volatile": true,
         "role": "sustain", "tags": ["heal"], "budget": 4,
         "flavor": "체력 1칸 회복.",
         "visual": { "silhouette": "둥근 물약 병", "material": "유리병+분홍 액체", "palette": "scarlet:#ff8d7a/#ffffff", "focal_motif": "하트 거품" }
       },
       {
         "id": "c_megapotion", "name": "왕 물약", "kind": "consumable", "rarity": "rare",
-        "effect": { "heal": 3 }, "cost": 14, "runItem": true,
+        "effect": { "heal": 3 }, "cost": 14, "volatile": true,
         "role": "sustain", "tags": ["heal"], "budget": 9,
         "flavor": "체력 3칸 회복.",
         "visual": { "silhouette": "큰 둥근 물약 병", "material": "유리병+진분홍 액체+거품", "palette": "scarlet:#e83a52/#ffffff", "focal_motif": "큰 하트 거품" }
       },
       {
         "id": "c_energydrink", "name": "기력 드링크", "kind": "consumable", "rarity": "common",
-        "effect": { "energyRestore": 60 }, "cost": 5, "runItem": true,
+        "effect": { "energyRestore": 60 }, "cost": 5, "volatile": true,
         "role": "utility", "tags": ["energy"], "budget": 4,
         "flavor": "기력 60 즉시 회복.",
         "visual": { "silhouette": "둥근 캔", "material": "알루미늄 캔+청록 글로우", "palette": "hero:#3fd6a8/#ffffff", "focal_motif": "번개 마크" }
