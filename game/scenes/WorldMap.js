@@ -361,7 +361,8 @@
       console.log('[WorldMap] 던전 진입 → ' + region.name + ' (' + region.floors[0] + '층)');
 
       var sm = this.scene;
-      if (sm.getScene && sm.getScene('Dungeon')) {
+      // Phaser 4 ScenePlugin 은 getScene 이 없고 get 만 있다(다른 씬들과 동일 계약)
+      if (sm.get('Dungeon')) {
         sm.start('Dungeon');
       } else {
         // Dungeon 씬 미구현 단계 폴백
@@ -373,7 +374,8 @@
     // ── 헬퍼: 마을 복귀 ────────────────────────────────────────────────────────
     _goVillage: function () {
       var sm = this.scene;
-      if (sm.getScene && sm.getScene('Village')) {
+      // Phaser 4 ScenePlugin 은 getScene 이 없고 get 만 있다
+      if (sm.get('Village')) {
         sm.start('Village');
       } else {
         sm.start('Title');
