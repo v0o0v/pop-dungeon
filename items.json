@@ -66,19 +66,17 @@
         "extraProjectiles": 1,
         "spreadAngle": 8
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 18,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 18,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -103,21 +101,19 @@
       "cost": 9,
       "effect": {
         "pierce": 1,
-        "damage": 2
+        "flatDamage": 2
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 18,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 18,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -142,21 +138,19 @@
       "cost": 13,
       "effect": {
         "bounce": 1,
-        "damage": 3
+        "flatDamage": 3
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 26,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 26,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -183,19 +177,17 @@
         "homing": 0.14,
         "fireRateFlat": -0.02
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 26,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 26,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -224,19 +216,17 @@
         "extraProjectiles": 1,
         "spreadAngle": 10
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 2
-        },
-        "costCurve": {
-          "goldBase": 40,
-          "rarityMult": 1.6,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 2
+      },
+      "enhanceCost": {
+        "goldBase": 40,
+        "rarityMult": 1.6,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -261,23 +251,21 @@
       "rarity": "legendary",
       "cost": 26,
       "effect": {
-        "damage": 10,
+        "flatDamage": 10,
         "bulletSize": 0.6,
         "fireRateFlat": -0.03
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 2
-        },
-        "costCurve": {
-          "goldBase": 60,
-          "rarityMult": 2,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 2
+      },
+      "enhanceCost": {
+        "goldBase": 60,
+        "rarityMult": 2,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -304,19 +292,17 @@
       "effect": {
         "pickupRadius": 50
       },
-      "enhance": {
-        "perLevel": {
-          "pickupRadius": 10
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "pickupRadius": 10
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "utility",
       "tags": [
@@ -343,19 +329,17 @@
         "energyRegen": 3,
         "energyMax": 15
       },
-      "enhance": {
-        "perLevel": {
-          "energyRegen": 1
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "energyRegen": 1
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "enabler",
       "tags": [
@@ -382,19 +366,17 @@
       "effect": {
         "skillDamage": 12
       },
-      "enhance": {
-        "perLevel": {
-          "skillDamage": 3
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "skillDamage": 3
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "payoff",
       "tags": [
@@ -421,19 +403,17 @@
         "energyRegen": 5,
         "skillDamage": 14
       },
-      "enhance": {
-        "perLevel": {
-          "skillDamage": 3
-        },
-        "costCurve": {
-          "goldBase": 38,
-          "rarityMult": 1.6,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "skillDamage": 3
+      },
+      "enhanceCost": {
+        "goldBase": 38,
+        "rarityMult": 1.6,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "payoff",
       "tags": [
@@ -461,19 +441,17 @@
         "skillDamage": 20,
         "energyMax": 30
       },
-      "enhance": {
-        "perLevel": {
-          "skillDamage": 4
-        },
-        "costCurve": {
-          "goldBase": 56,
-          "rarityMult": 2,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "skillDamage": 4
+      },
+      "enhanceCost": {
+        "goldBase": 56,
+        "rarityMult": 2,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "payoff",
       "tags": [
@@ -500,19 +478,17 @@
       "effect": {
         "maxHp": 1
       },
-      "enhance": {
-        "perLevel": {
-          "armor": 1
-        },
-        "costCurve": {
-          "goldBase": 16,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "armor": 1
+      },
+      "enhanceCost": {
+        "goldBase": 16,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "survival",
       "tags": [
@@ -539,19 +515,17 @@
         "armor": 1,
         "contactDamage": 8
       },
-      "enhance": {
-        "perLevel": {
-          "contactDamage": 3
-        },
-        "costCurve": {
-          "goldBase": 16,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "contactDamage": 3
+      },
+      "enhanceCost": {
+        "goldBase": 16,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "survival",
       "tags": [
@@ -578,19 +552,17 @@
         "contactDamage": 12,
         "armor": 1
       },
-      "enhance": {
-        "perLevel": {
-          "contactDamage": 4
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "contactDamage": 4
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "survival",
       "tags": [
@@ -617,19 +589,17 @@
       "effect": {
         "maxHp": 2
       },
-      "enhance": {
-        "perLevel": {
-          "armor": 1
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "armor": 1
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "survival",
       "tags": [
@@ -656,19 +626,17 @@
         "maxHp": 2,
         "armor": 2
       },
-      "enhance": {
-        "perLevel": {
-          "armor": 1
-        },
-        "costCurve": {
-          "goldBase": 38,
-          "rarityMult": 1.6,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "armor": 1
+      },
+      "enhanceCost": {
+        "goldBase": 38,
+        "rarityMult": 1.6,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "survival",
       "tags": [
@@ -697,19 +665,17 @@
         "armor": 2,
         "contactDamage": 10
       },
-      "enhance": {
-        "perLevel": {
-          "armor": 1
-        },
-        "costCurve": {
-          "goldBase": 56,
-          "rarityMult": 2,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "armor": 1
+      },
+      "enhanceCost": {
+        "goldBase": 56,
+        "rarityMult": 2,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "survival",
       "tags": [
@@ -736,19 +702,17 @@
       "effect": {
         "pickupRadius": 40
       },
-      "enhance": {
-        "perLevel": {
-          "pickupRadius": 10
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "pickupRadius": 10
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "utility",
       "tags": [
@@ -774,19 +738,17 @@
       "effect": {
         "fireRateFlat": -0.03
       },
-      "enhance": {
-        "perLevel": {
-          "fireRateFlat": -0.005
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "fireRateFlat": -0.005
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -813,19 +775,17 @@
         "dodgeCharges": 1
       },
       "grantsVerb": "extra_dodge",
-      "enhance": {
-        "perLevel": {
-          "dashDamage": 4
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "dashDamage": 4
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "mobility",
       "tags": [
@@ -854,19 +814,17 @@
         "dashDamage": 14
       },
       "grantsVerb": "extra_dodge",
-      "enhance": {
-        "perLevel": {
-          "dashDamage": 5
-        },
-        "costCurve": {
-          "goldBase": 38,
-          "rarityMult": 1.6,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "dashDamage": 5
+      },
+      "enhanceCost": {
+        "goldBase": 38,
+        "rarityMult": 1.6,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "mobility",
       "tags": [
@@ -896,19 +854,17 @@
         "fireRateFlat": -0.02
       },
       "grantsVerb": "extra_dodge",
-      "enhance": {
-        "perLevel": {
-          "dashDamage": 6
-        },
-        "costCurve": {
-          "goldBase": 56,
-          "rarityMult": 2,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "dashDamage": 6
+      },
+      "enhanceCost": {
+        "goldBase": 56,
+        "rarityMult": 2,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "mobility",
       "tags": [
@@ -935,19 +891,17 @@
       "effect": {
         "luck": 1
       },
-      "enhance": {
-        "perLevel": {
-          "luck": 1
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "luck": 1
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "utility",
       "tags": [
@@ -971,21 +925,19 @@
       "rarity": "common",
       "cost": 7,
       "effect": {
-        "damage": 3
+        "flatDamage": 3
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -1012,19 +964,17 @@
         "skillDamage": 10,
         "energyRegen": 2
       },
-      "enhance": {
-        "perLevel": {
-          "skillDamage": 3
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "skillDamage": 3
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "payoff",
       "tags": [
@@ -1049,22 +999,20 @@
       "rarity": "epic",
       "cost": 17,
       "effect": {
-        "damage": 8,
+        "flatDamage": 8,
         "maxHp": -1
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 2
-        },
-        "costCurve": {
-          "goldBase": 38,
-          "rarityMult": 1.6,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 2
+      },
+      "enhanceCost": {
+        "goldBase": 38,
+        "rarityMult": 1.6,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "payoff",
       "tags": [
@@ -1090,22 +1038,20 @@
       "rarity": "legendary",
       "cost": 24,
       "effect": {
-        "damage": 10,
+        "flatDamage": 10,
         "skillDamage": 12
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 2
-        },
-        "costCurve": {
-          "goldBase": 56,
-          "rarityMult": 2,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 2
+      },
+      "enhanceCost": {
+        "goldBase": 56,
+        "rarityMult": 2,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -1130,21 +1076,19 @@
       "rarity": "common",
       "cost": 6,
       "effect": {
-        "damage": 2
+        "flatDamage": 2
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -1170,19 +1114,17 @@
       "effect": {
         "pickupRadius": 45
       },
-      "enhance": {
-        "perLevel": {
-          "pickupRadius": 10
-        },
-        "costCurve": {
-          "goldBase": 14,
-          "rarityMult": 1,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "pickupRadius": 10
+      },
+      "enhanceCost": {
+        "goldBase": 14,
+        "rarityMult": 1,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "utility",
       "tags": [
@@ -1208,19 +1150,17 @@
       "effect": {
         "pierce": 1
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -1246,19 +1186,17 @@
       "effect": {
         "bounce": 1
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 1
-        },
-        "costCurve": {
-          "goldBase": 24,
-          "rarityMult": 1.3,
-          "material": [
-            "mat_starshard",
-            "mat_brightore",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 1
+      },
+      "enhanceCost": {
+        "goldBase": 24,
+        "rarityMult": 1.3,
+        "material": [
+          "mat_starshard",
+          "mat_brightore",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -1285,19 +1223,17 @@
         "extraProjectiles": 1,
         "spreadAngle": 8
       },
-      "enhance": {
-        "perLevel": {
-          "damage": 2
-        },
-        "costCurve": {
-          "goldBase": 38,
-          "rarityMult": 1.6,
-          "material": [
-            "mat_brightore",
-            "mat_corefrag",
-            "mat_corefrag"
-          ]
-        }
+      "enhStep": {
+        "flatDamage": 2
+      },
+      "enhanceCost": {
+        "goldBase": 38,
+        "rarityMult": 1.6,
+        "material": [
+          "mat_brightore",
+          "mat_corefrag",
+          "mat_corefrag"
+        ]
       },
       "role": "core",
       "tags": [
@@ -1323,7 +1259,7 @@
         "maxHp": -1
       },
       "maxStacks": 1,
-      "volatile": true,
+      "runItem": true,
       "role": "payoff",
       "tags": [
         "damage",
@@ -1349,7 +1285,7 @@
         "coinMult": 1.25
       },
       "maxStacks": 1,
-      "volatile": true,
+      "runItem": true,
       "role": "utility",
       "tags": [
         "luck",
@@ -1373,7 +1309,7 @@
         "energyRegen": 4,
         "energyMax": 25
       },
-      "volatile": true,
+      "runItem": true,
       "role": "enabler",
       "tags": [
         "skill",
@@ -1396,7 +1332,7 @@
       "effect": {
         "skillDamage": 18
       },
-      "volatile": true,
+      "runItem": true,
       "role": "payoff",
       "tags": [
         "skill"
@@ -1418,7 +1354,7 @@
       "effect": {
         "split": 2
       },
-      "volatile": true,
+      "runItem": true,
       "role": "core",
       "tags": [
         "split",
@@ -1441,7 +1377,7 @@
       "effect": {
         "homing": 0.12
       },
-      "volatile": true,
+      "runItem": true,
       "role": "core",
       "tags": [
         "homing",
@@ -1465,7 +1401,7 @@
         "contactDamage": 10,
         "armor": 1
       },
-      "volatile": true,
+      "runItem": true,
       "role": "survival",
       "tags": [
         "defense"
@@ -1486,9 +1422,9 @@
       "rarity": "rare",
       "effect": {
         "bulletSize": 0.6,
-        "damage": 4
+        "flatDamage": 4
       },
-      "volatile": true,
+      "runItem": true,
       "role": "core",
       "tags": [
         "size",
@@ -1512,7 +1448,7 @@
         "heal": 1
       },
       "cost": 6,
-      "volatile": true,
+      "runItem": true,
       "role": "sustain",
       "tags": [
         "heal"
@@ -1535,7 +1471,7 @@
         "heal": 3
       },
       "cost": 14,
-      "volatile": true,
+      "runItem": true,
       "role": "sustain",
       "tags": [
         "heal"
@@ -1558,7 +1494,7 @@
         "energyRestore": 60
       },
       "cost": 5,
-      "volatile": true,
+      "runItem": true,
       "role": "utility",
       "tags": [
         "energy"
@@ -1674,7 +1610,7 @@
   "affixes": [
     {
       "id": "affix_dmg",
-      "key": "damage",
+      "key": "flatDamage",
       "name": "날카로운",
       "tiers": {
         "common": 1,

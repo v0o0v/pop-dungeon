@@ -50,23 +50,23 @@
       {
         "id": "w_twinpop", "name": "쌍발 팝총", "kind": "equipment", "slot": "weapon", "rarity": "common", "cost": 8,
         "effect": { "extraProjectiles": 1, "spreadAngle": 8 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 18, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 18, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["multishot", "weapon"], "budget": 8,
         "flavor": "둘이 처음 함께 만든 두 갈래 총. 탄알이 하나 더 나간다.",
         "visual": { "silhouette": "두 갈래로 갈라진 둥근 총열", "material": "장난감 금속+나무 손잡이", "palette": "torch:#d96a28/#ffa53a", "focal_motif": "쌍열 총구" }
       },
       {
         "id": "w_longpip", "name": "길쭉 씨앗총", "kind": "equipment", "slot": "weapon", "rarity": "common", "cost": 9,
-        "effect": { "pierce": 1, "damage": 2 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 18, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "effect": { "pierce": 1, "flatDamage": 2 },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 18, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["pierce", "weapon"], "budget": 9,
         "flavor": "별이가 깎은 긴 총열. 탄알이 적 1명을 더 뚫는다.",
         "visual": { "silhouette": "길고 가는 총열", "material": "깎은 나무+놋쇠 띠", "palette": "torch:#8a3d1c/#ffa53a", "focal_motif": "긴 총구 끝" }
       },
       {
         "id": "w_bouncekit", "name": "통통 개조관", "kind": "equipment", "slot": "weapon", "rarity": "rare", "cost": 13,
-        "effect": { "bounce": 1, "damage": 3 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 26, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "effect": { "bounce": 1, "flatDamage": 3 },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 26, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["bounce", "weapon"], "budget": 13,
         "flavor": "벽을 타게 만든 개조 총열. 탄알이 한 번 튕긴다.",
         "visual": { "silhouette": "구부러진 반사 총열", "material": "광택 놋쇠+고무 패킹", "palette": "gold:#c98a1f/#ffc63a", "focal_motif": "튕김 호" }
@@ -74,7 +74,7 @@
       {
         "id": "w_seekerpop", "name": "유도 팝총", "kind": "equipment", "slot": "weapon", "rarity": "rare", "cost": 13,
         "effect": { "homing": 0.14, "fireRateFlat": -0.02 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 26, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 26, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["homing", "seek", "weapon"], "budget": 13,
         "flavor": "별을 따라가는 탄을 쏜다. 탄알이 가까운 적으로 살짝 휜다.",
         "visual": { "silhouette": "별 조준경 달린 총열", "material": "놋쇠+유리 렌즈", "palette": "gold:#7a4a12/#ffc63a", "focal_motif": "별 조준경" }
@@ -82,15 +82,15 @@
       {
         "id": "w_splitstar", "name": "별조각 산탄총", "kind": "equipment", "slot": "weapon", "rarity": "epic", "cost": 19,
         "effect": { "split": 2, "extraProjectiles": 1, "spreadAngle": 10 },
-        "enhance": { "perLevel": { "damage": 2 }, "costCurve": { "goldBase": 40, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "flatDamage": 2 }, "enhanceCost": { "goldBase": 40, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "core", "tags": ["split", "multishot", "weapon"], "budget": 19,
         "flavor": "별조각을 쏘면 맞은 탄이 다시 갈라진다.",
         "visual": { "silhouette": "넓은 산탄 총구", "material": "보라 결정 박힌 금속", "palette": "arcane:#5d35a8/#9a66e8", "focal_motif": "별조각 산포" }
       },
       {
         "id": "w_heartcannon", "name": "별심장 대포", "kind": "equipment", "slot": "weapon", "rarity": "legendary", "cost": 26,
-        "effect": { "damage": 10, "bulletSize": 0.6, "fireRateFlat": -0.03 },
-        "enhance": { "perLevel": { "damage": 2 }, "costCurve": { "goldBase": 60, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "effect": { "flatDamage": 10, "bulletSize": 0.6, "fireRateFlat": -0.03 },
+        "enhStep": { "flatDamage": 2 }, "enhanceCost": { "goldBase": 60, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "core", "tags": ["size", "damage", "weapon"], "budget": 26,
         "flavor": "별의 심장 파편을 장전한 결전 무기. 크고 무거운 탄을 빠르게 쏜다.",
         "visual": { "silhouette": "굵은 대포 총신", "material": "금빛 금속+심장 코어 글로우", "palette": "gold:#ffc63a/#fff1b8", "focal_motif": "심장 코어" }
@@ -100,7 +100,7 @@
       {
         "id": "h_strawhat", "name": "솔뫼 밀짚모자", "kind": "equipment", "slot": "helm", "rarity": "common", "cost": 6,
         "effect": { "pickupRadius": 50 },
-        "enhance": { "perLevel": { "pickupRadius": 10 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "pickupRadius": 10 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "utility", "tags": ["pickup", "helm"], "budget": 6,
         "flavor": "마을에서 쓰던 밀짚모자. 떨어진 걸 더 멀리서 끌어온다.",
         "visual": { "silhouette": "둥근 챙 밀짚모자", "material": "엮은 밀짚", "palette": "gold:#c98a1f/#fff1b8", "focal_motif": "넓은 챙" }
@@ -108,7 +108,7 @@
       {
         "id": "h_goggles", "name": "별보기 고글", "kind": "equipment", "slot": "helm", "rarity": "common", "cost": 8,
         "effect": { "energyRegen": 3, "energyMax": 15 },
-        "enhance": { "perLevel": { "energyRegen": 1 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "energyRegen": 1 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "enabler", "tags": ["skill", "energy", "helm"], "budget": 8,
         "flavor": "별이가 밤하늘을 보던 고글. 기력 회복과 최대치를 늘린다.",
         "visual": { "silhouette": "둥근 두 렌즈 고글", "material": "놋쇠 테+청록 유리", "palette": "hero:#188a72/#3fd6a8", "focal_motif": "쌍렌즈" }
@@ -116,7 +116,7 @@
       {
         "id": "h_starcrown", "name": "작은 별관", "kind": "equipment", "slot": "helm", "rarity": "rare", "cost": 12,
         "effect": { "skillDamage": 12 },
-        "enhance": { "perLevel": { "skillDamage": 3 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "skillDamage": 3 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "payoff", "tags": ["skill", "helm"], "budget": 12,
         "flavor": "작은 별을 엮은 관. 스킬 피해가 늘어난다.",
         "visual": { "silhouette": "별 박힌 가는 관", "material": "은빛 금속+별 큐빅", "palette": "arcane:#5d35a8/#d9b8ff", "focal_motif": "정수리 별" }
@@ -124,7 +124,7 @@
       {
         "id": "h_owlhood", "name": "부엉이 두건", "kind": "equipment", "slot": "helm", "rarity": "epic", "cost": 19,
         "effect": { "energyRegen": 5, "skillDamage": 14 },
-        "enhance": { "perLevel": { "skillDamage": 3 }, "costCurve": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "skillDamage": 3 }, "enhanceCost": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "payoff", "tags": ["skill", "energy", "helm"], "budget": 19,
         "flavor": "밤을 지키는 부엉이 두건. 기력과 스킬 피해를 함께 올린다.",
         "visual": { "silhouette": "귀 솟은 두건", "material": "짙은 천+깃털 술", "palette": "arcane:#2b1a4d/#9a66e8", "focal_motif": "부엉이 귀" }
@@ -132,7 +132,7 @@
       {
         "id": "h_starsight", "name": "별빛 면류관", "kind": "equipment", "slot": "helm", "rarity": "legendary", "cost": 24,
         "effect": { "skillDamage": 20, "energyMax": 30 },
-        "enhance": { "perLevel": { "skillDamage": 4 }, "costCurve": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "skillDamage": 4 }, "enhanceCost": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "payoff", "tags": ["skill", "energy", "helm"], "budget": 24,
         "flavor": "별빛이 맺힌 면류관. 스킬 빌드의 정점.",
         "visual": { "silhouette": "별빛 흐르는 면류관", "material": "금빛 금속+별빛 글로우", "palette": "gold:#ffc63a/#fff1b8", "focal_motif": "이마 별빛" }
@@ -142,7 +142,7 @@
       {
         "id": "a_patchvest", "name": "반창고 조끼", "kind": "equipment", "slot": "armor", "rarity": "common", "cost": 7,
         "effect": { "maxHp": 1 },
-        "enhance": { "perLevel": { "armor": 1 }, "costCurve": { "goldBase": 16, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "armor": 1 }, "enhanceCost": { "goldBase": 16, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "survival", "tags": ["hp", "armor_slot"], "budget": 7,
         "flavor": "별이의 반창고를 덧댄 조끼. 체력 1칸을 늘린다.",
         "visual": { "silhouette": "반창고 덧댄 조끼", "material": "헝겊+반창고 패치", "palette": "hero:#188a72/#aef7dd", "focal_motif": "가슴 반창고" }
@@ -150,7 +150,7 @@
       {
         "id": "a_quilt", "name": "누비 외투", "kind": "equipment", "slot": "armor", "rarity": "common", "cost": 8,
         "effect": { "armor": 1, "contactDamage": 8 },
-        "enhance": { "perLevel": { "contactDamage": 3 }, "costCurve": { "goldBase": 16, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "contactDamage": 3 }, "enhanceCost": { "goldBase": 16, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "survival", "tags": ["defense", "armor_slot"], "budget": 8,
         "flavor": "두툼한 누비 외투. 피격을 가끔 막고 닿은 적을 밀어낸다.",
         "visual": { "silhouette": "두툼한 누비 외투", "material": "누빈 두꺼운 천", "palette": "steel:#45526e/#c6d4e6", "focal_motif": "누비 결" }
@@ -158,7 +158,7 @@
       {
         "id": "a_thornshell", "name": "가시 등껍질 갑옷", "kind": "equipment", "slot": "armor", "rarity": "rare", "cost": 11,
         "effect": { "contactDamage": 12, "armor": 1 },
-        "enhance": { "perLevel": { "contactDamage": 4 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "contactDamage": 4 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "survival", "tags": ["defense", "thorns", "armor_slot"], "budget": 11,
         "flavor": "가시 돋은 등껍질 갑옷. 몸에 닿은 적이 가시에 찔린다.",
         "visual": { "silhouette": "가시 돋은 등껍질", "material": "무광 갑각+가시", "palette": "venom:#2f7a2c/#c2f57e", "focal_motif": "가시 링" }
@@ -166,7 +166,7 @@
       {
         "id": "a_starplate", "name": "별무늬 흉갑", "kind": "equipment", "slot": "armor", "rarity": "rare", "cost": 12,
         "effect": { "maxHp": 2 },
-        "enhance": { "perLevel": { "armor": 1 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "armor": 1 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "survival", "tags": ["hp", "armor_slot"], "budget": 12,
         "flavor": "별무늬를 새긴 흉갑. 체력 2칸을 늘린다.",
         "visual": { "silhouette": "별 새긴 흉갑", "material": "광택 금속판+별 음각", "palette": "steel:#7d8fae/#c6d4e6", "focal_motif": "가슴 별무늬" }
@@ -174,7 +174,7 @@
       {
         "id": "a_guardianquilt", "name": "수호 누비갑", "kind": "equipment", "slot": "armor", "rarity": "epic", "cost": 18,
         "effect": { "maxHp": 2, "armor": 2 },
-        "enhance": { "perLevel": { "armor": 1 }, "costCurve": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "armor": 1 }, "enhanceCost": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "survival", "tags": ["hp", "defense", "armor_slot"], "budget": 18,
         "flavor": "마을 어른이 지어 준 수호 누비갑. 체력과 방어를 함께 올린다.",
         "visual": { "silhouette": "두꺼운 어깨 누비갑", "material": "누빈 천+금속 보강", "palette": "hero:#0f3f38/#3fd6a8", "focal_motif": "어깨 보강" }
@@ -182,7 +182,7 @@
       {
         "id": "a_heartward", "name": "별심장 보호대", "kind": "equipment", "slot": "armor", "rarity": "legendary", "cost": 24,
         "effect": { "maxHp": 3, "armor": 2, "contactDamage": 10 },
-        "enhance": { "perLevel": { "armor": 1 }, "costCurve": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "armor": 1 }, "enhanceCost": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "survival", "tags": ["hp", "defense", "armor_slot"], "budget": 24,
         "flavor": "별의 심장을 본떠 만든 보호대. 생존의 정점.",
         "visual": { "silhouette": "심장 문양 보호대", "material": "금빛 갑각+심장 글로우", "palette": "gold:#c98a1f/#fff1b8", "focal_motif": "가슴 심장 문양" }
@@ -192,7 +192,7 @@
       {
         "id": "b_sandals", "name": "마을 짚신", "kind": "equipment", "slot": "boots", "rarity": "common", "cost": 6,
         "effect": { "pickupRadius": 40 },
-        "enhance": { "perLevel": { "pickupRadius": 10 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "pickupRadius": 10 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "utility", "tags": ["pickup", "boots_slot"], "budget": 6,
         "flavor": "마을에서 신던 짚신. 떨어진 걸 더 멀리서 끌어온다.",
         "visual": { "silhouette": "엮은 짚신 한 켤레", "material": "엮은 짚", "palette": "gold:#7a4a12/#ffc63a", "focal_motif": "짚 결" }
@@ -200,7 +200,7 @@
       {
         "id": "b_rabbitsole", "name": "토끼 밑창", "kind": "equipment", "slot": "boots", "rarity": "common", "cost": 8,
         "effect": { "fireRateFlat": -0.03 },
-        "enhance": { "perLevel": { "fireRateFlat": -0.005 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "fireRateFlat": -0.005 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["firerate", "boots_slot"], "budget": 8,
         "flavor": "토끼 발바닥을 댄 밑창. 발걸음이 빨라져 발사 간격이 줄어든다.",
         "visual": { "silhouette": "말랑한 발바닥 밑창", "material": "말랑 고무", "palette": "scarlet:#a02038/#ff8d7a", "focal_motif": "발바닥 젤리" }
@@ -208,7 +208,7 @@
       {
         "id": "b_springboots", "name": "통통 스프링 부츠", "kind": "equipment", "slot": "boots", "rarity": "rare", "cost": 12,
         "effect": { "dodgeCharges": 1 }, "grantsVerb": "extra_dodge",
-        "enhance": { "perLevel": { "dashDamage": 4 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "dashDamage": 4 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "mobility", "tags": ["mobility", "dodge", "boots_slot"], "budget": 12,
         "flavor": "스프링을 단 부츠. 닷지롤 충전이 1 늘어난다.",
         "visual": { "silhouette": "스프링 밑창 부츠", "material": "고무+스프링", "palette": "venom:#2f7a2c/#c2f57e", "focal_motif": "스프링 밑창" }
@@ -216,7 +216,7 @@
       {
         "id": "b_dashshoes", "name": "들이받기 부츠", "kind": "equipment", "slot": "boots", "rarity": "epic", "cost": 18,
         "effect": { "dodgeCharges": 1, "dashDamage": 14 }, "grantsVerb": "extra_dodge",
-        "enhance": { "perLevel": { "dashDamage": 5 }, "costCurve": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "dashDamage": 5 }, "enhanceCost": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "mobility", "tags": ["mobility", "dodge", "boots_slot"], "budget": 18,
         "flavor": "구르며 들이받게 만든 부츠. 닷지로 적을 들이받으면 피해를 준다.",
         "visual": { "silhouette": "묵직한 들이받기 부츠", "material": "강화 고무+금속 코", "palette": "arcane:#5d35a8/#9a66e8", "focal_motif": "금속 발끝" }
@@ -224,7 +224,7 @@
       {
         "id": "b_starstep", "name": "별걸음 신", "kind": "equipment", "slot": "boots", "rarity": "legendary", "cost": 24,
         "effect": { "dodgeCharges": 1, "dashDamage": 20, "fireRateFlat": -0.02 }, "grantsVerb": "extra_dodge",
-        "enhance": { "perLevel": { "dashDamage": 6 }, "costCurve": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "dashDamage": 6 }, "enhanceCost": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "mobility", "tags": ["mobility", "dodge", "boots_slot"], "budget": 24,
         "flavor": "별빛을 밟고 걷는 신. 기동의 정점.",
         "visual": { "silhouette": "별빛 자국 남기는 신", "material": "금빛 가죽+별빛 글로우", "palette": "gold:#ffc63a/#fff1b8", "focal_motif": "별빛 발자국" }
@@ -234,15 +234,15 @@
       {
         "id": "m_cloverpend", "name": "네잎 클로버 목걸이", "kind": "equipment", "slot": "amulet", "rarity": "common", "cost": 6,
         "effect": { "luck": 1 },
-        "enhance": { "perLevel": { "luck": 1 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "luck": 1 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "utility", "tags": ["luck", "amulet_slot"], "budget": 6,
         "flavor": "마을 들판의 네잎 클로버. 더 좋은 드랍을 부른다.",
         "visual": { "silhouette": "네 잎 클로버 펜던트", "material": "에메랄드 글로우+실끈", "palette": "venom:#2f7a2c/#c2f57e", "focal_motif": "네 잎" }
       },
       {
         "id": "m_clawtooth", "name": "들짐승 이빨", "kind": "equipment", "slot": "amulet", "rarity": "common", "cost": 7,
-        "effect": { "damage": 3 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "effect": { "flatDamage": 3 },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["damage", "amulet_slot"], "budget": 7,
         "flavor": "뒷산에서 주운 들짐승 이빨. 화력을 조금 올린다.",
         "visual": { "silhouette": "구멍 뚫린 송곳니", "material": "흰 뼈+가죽끈", "palette": "steel:#7d8fae/#c6d4e6", "focal_motif": "날카로운 끝" }
@@ -250,23 +250,23 @@
       {
         "id": "m_starlocket", "name": "별 로켓", "kind": "equipment", "slot": "amulet", "rarity": "rare", "cost": 12,
         "effect": { "skillDamage": 10, "energyRegen": 2 },
-        "enhance": { "perLevel": { "skillDamage": 3 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "skillDamage": 3 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "payoff", "tags": ["skill", "energy", "amulet_slot"], "budget": 12,
         "flavor": "별 그림을 넣은 로켓. 스킬과 기력을 함께 돕는다.",
         "visual": { "silhouette": "별 새긴 둥근 로켓", "material": "은빛 금속+별 음각", "palette": "arcane:#5d35a8/#d9b8ff", "focal_motif": "여닫는 별" }
       },
       {
         "id": "m_glasscharm", "name": "유리 별 부적", "kind": "equipment", "slot": "amulet", "rarity": "epic", "cost": 17,
-        "effect": { "damage": 8, "maxHp": -1 },
-        "enhance": { "perLevel": { "damage": 2 }, "costCurve": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "effect": { "flatDamage": 8, "maxHp": -1 },
+        "enhStep": { "flatDamage": 2 }, "enhanceCost": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "payoff", "tags": ["damage", "glass", "risk", "amulet_slot"], "budget": 17,
         "flavor": "금이 간 유리 별. 화력이 크게 오르지만 체력 1칸을 잃는다(고위험).",
         "visual": { "silhouette": "금이 간 별 모양 유리", "material": "투명 글래스+내부 붉은 글로우", "palette": "scarlet:#a02038/#ff8d7a", "focal_motif": "균열 별" }
       },
       {
         "id": "m_starheart", "name": "별의 심장 조각", "kind": "equipment", "slot": "amulet", "rarity": "legendary", "cost": 24,
-        "effect": { "damage": 10, "skillDamage": 12 },
-        "enhance": { "perLevel": { "damage": 2 }, "costCurve": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "effect": { "flatDamage": 10, "skillDamage": 12 },
+        "enhStep": { "flatDamage": 2 }, "enhanceCost": { "goldBase": 56, "rarityMult": 2.0, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "core", "tags": ["damage", "skill", "amulet_slot"], "budget": 24,
         "flavor": "별의 심장에서 떨어진 조각. 화력과 스킬을 모두 끌어올린다.",
         "visual": { "silhouette": "맥동하는 심장 조각", "material": "금빛 결정+심장 글로우", "palette": "gold:#ffc63a/#fff1b8", "focal_motif": "맥동 코어" }
@@ -275,8 +275,8 @@
       /* ===== F. 반지(ring) — 작은 별 반지 5종 (영속) ===== */
       {
         "id": "r_pebblering", "name": "조약돌 반지", "kind": "equipment", "slot": "ring", "rarity": "common", "cost": 6,
-        "effect": { "damage": 2 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "effect": { "flatDamage": 2 },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["damage", "ring_slot"], "budget": 6,
         "flavor": "시냇가 조약돌을 박은 반지. 화력을 조금 올린다.",
         "visual": { "silhouette": "둥근 돌 박힌 가락지", "material": "구리 고리+회색 조약돌", "palette": "steel:#45526e/#7d8fae", "focal_motif": "박힌 조약돌" }
@@ -284,7 +284,7 @@
       {
         "id": "r_magnetring", "name": "자석 반지", "kind": "equipment", "slot": "ring", "rarity": "common", "cost": 6,
         "effect": { "pickupRadius": 45 },
-        "enhance": { "perLevel": { "pickupRadius": 10 }, "costCurve": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "pickupRadius": 10 }, "enhanceCost": { "goldBase": 14, "rarityMult": 1.0, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "utility", "tags": ["pickup", "ring_slot"], "budget": 6,
         "flavor": "작은 자석을 박은 반지. 픽업 반경을 넓힌다.",
         "visual": { "silhouette": "말굽 자석 박힌 가락지", "material": "구리 고리+붉은 자석", "palette": "scarlet:#a02038/#ff8d7a", "focal_motif": "말굽 자석" }
@@ -292,7 +292,7 @@
       {
         "id": "r_pierceloop", "name": "관통 고리", "kind": "equipment", "slot": "ring", "rarity": "rare", "cost": 11,
         "effect": { "pierce": 1 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["pierce", "ring_slot"], "budget": 11,
         "flavor": "꿰뚫는 힘이 깃든 고리. 탄알이 적 1명을 더 뚫는다.",
         "visual": { "silhouette": "뾰족한 가시 가락지", "material": "은빛 금속+가시", "palette": "hero:#188a72/#aef7dd", "focal_motif": "관통 가시" }
@@ -300,7 +300,7 @@
       {
         "id": "r_bounceloop", "name": "반사 고리", "kind": "equipment", "slot": "ring", "rarity": "rare", "cost": 11,
         "effect": { "bounce": 1 },
-        "enhance": { "perLevel": { "damage": 1 }, "costCurve": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] } },
+        "enhStep": { "flatDamage": 1 }, "enhanceCost": { "goldBase": 24, "rarityMult": 1.3, "material": ["mat_starshard", "mat_brightore", "mat_corefrag"] },
         "role": "core", "tags": ["bounce", "ring_slot"], "budget": 11,
         "flavor": "튕기는 힘이 깃든 고리. 탄알이 벽에서 한 번 더 튕긴다.",
         "visual": { "silhouette": "둥근 곡선 가락지", "material": "광택 금속+탄성 젤", "palette": "hero:#0f3f38/#3fd6a8", "focal_motif": "튕김 곡선" }
@@ -308,7 +308,7 @@
       {
         "id": "r_twinstar", "name": "쌍별 반지", "kind": "equipment", "slot": "ring", "rarity": "epic", "cost": 16,
         "effect": { "extraProjectiles": 1, "spreadAngle": 8 },
-        "enhance": { "perLevel": { "damage": 2 }, "costCurve": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] } },
+        "enhStep": { "flatDamage": 2 }, "enhanceCost": { "goldBase": 38, "rarityMult": 1.6, "material": ["mat_brightore", "mat_corefrag", "mat_corefrag"] },
         "role": "core", "tags": ["multishot", "ring_slot"], "budget": 16,
         "flavor": "두 별이 마주 도는 반지. 탄알이 하나 더 나간다.",
         "visual": { "silhouette": "두 별 마주 박힌 가락지", "material": "보라 금속+쌍별 큐빅", "palette": "arcane:#5d35a8/#9a66e8", "focal_motif": "마주 도는 쌍별" }
@@ -317,56 +317,56 @@
       /* ===== G. 런 휘발 부적(equipment, slot 없음) — 줍고 죽으면 소멸 8종 ===== */
       {
         "id": "run_glassheart", "name": "유리 심장", "kind": "equipment", "rarity": "epic",
-        "effect": { "damageMult": 1.4, "maxHp": -1 }, "maxStacks": 1, "volatile": true,
+        "effect": { "damageMult": 1.4, "maxHp": -1 }, "maxStacks": 1, "runItem": true,
         "role": "payoff", "tags": ["damage", "glass", "risk"], "budget": 15,
         "flavor": "던전에서 줍는 금 간 유리 심장. 피해가 40% 늘지만 체력 1칸을 잃는다.",
         "visual": { "silhouette": "금이 간 둥근 유리 심장", "material": "투명 글래스+내부 붉은 글로우", "palette": "scarlet:#a02038/#ff8d7a", "focal_motif": "균열 하트" }
       },
       {
         "id": "run_clover", "name": "행운 클로버", "kind": "equipment", "rarity": "epic",
-        "effect": { "luck": 2, "coinMult": 1.25 }, "maxStacks": 1, "volatile": true,
+        "effect": { "luck": 2, "coinMult": 1.25 }, "maxStacks": 1, "runItem": true,
         "role": "utility", "tags": ["luck", "economy"], "budget": 14,
         "flavor": "던전에서 줍는 네잎 클로버. 더 좋은 드랍과 25% 더 많은 던전 코인.",
         "visual": { "silhouette": "네 잎 클로버", "material": "에메랄드 글로우", "palette": "venom:#5cc23e/#c2f57e", "focal_motif": "네 잎" }
       },
       {
         "id": "run_energycore", "name": "기력 코어", "kind": "equipment", "rarity": "rare",
-        "effect": { "energyRegen": 4, "energyMax": 25 }, "volatile": true,
+        "effect": { "energyRegen": 4, "energyMax": 25 }, "runItem": true,
         "role": "enabler", "tags": ["skill", "energy"], "budget": 9,
         "flavor": "던전에서 줍는 맥동 코어. 기력 회복과 최대치를 늘려 스킬을 더 자주 쓰게 한다.",
         "visual": { "silhouette": "맥동하는 육각 코어", "material": "네온 글로우 결정", "palette": "hero:#188a72/#aef7dd", "focal_motif": "에너지 결정" }
       },
       {
         "id": "run_skillcharm", "name": "스킬 부적", "kind": "equipment", "rarity": "epic",
-        "effect": { "skillDamage": 18 }, "volatile": true,
+        "effect": { "skillDamage": 18 }, "runItem": true,
         "role": "payoff", "tags": ["skill"], "budget": 14,
         "flavor": "던전에서 줍는 룬 부적. 스킬 피해가 크게 늘어난다. 기력 코어와 함께면 스킬 빌드 완성.",
         "visual": { "silhouette": "룬이 새겨진 둥근 부적", "material": "금테+보라 룬 글로우", "palette": "arcane:#9a66e8/#d9b8ff", "focal_motif": "룬 부적" }
       },
       {
         "id": "run_splitseed", "name": "분열 씨앗", "kind": "equipment", "rarity": "epic",
-        "effect": { "split": 2 }, "volatile": true,
+        "effect": { "split": 2 }, "runItem": true,
         "role": "core", "tags": ["split", "multishot"], "budget": 14,
         "flavor": "던전에서 줍는 별조각 씨앗. 적에게 맞은 탄알이 작은 탄 2개로 갈라진다.",
         "visual": { "silhouette": "갈라지는 세 갈래 씨앗", "material": "광택 결정 파편", "palette": "arcane:#5d35a8/#9a66e8", "focal_motif": "분열 파편" }
       },
       {
         "id": "run_homingheart", "name": "유도 하트", "kind": "equipment", "rarity": "rare",
-        "effect": { "homing": 0.12 }, "volatile": true,
+        "effect": { "homing": 0.12 }, "runItem": true,
         "role": "core", "tags": ["homing", "seek"], "budget": 10,
         "flavor": "던전에서 줍는 날개 달린 하트. 탄알이 가까운 적으로 살짝 휜다.",
         "visual": { "silhouette": "작은 날개 달린 하트", "material": "분홍 글로우", "palette": "scarlet:#e83a52/#ff8d7a", "focal_motif": "유도 하트" }
       },
       {
         "id": "run_thornband", "name": "가시 띠", "kind": "equipment", "rarity": "rare",
-        "effect": { "contactDamage": 10, "armor": 1 }, "volatile": true,
+        "effect": { "contactDamage": 10, "armor": 1 }, "runItem": true,
         "role": "survival", "tags": ["defense"], "budget": 9,
         "flavor": "던전에서 줍는 가시 돋은 띠. 몸에 닿은 적이 가시에 찔리고 피격을 가끔 막는다.",
         "visual": { "silhouette": "가시 돋은 허리띠", "material": "무광 가죽+가시", "palette": "venom:#2f7a2c/#5cc23e", "focal_motif": "가시 줄" }
       },
       {
         "id": "run_bigpop", "name": "왕 팝", "kind": "equipment", "rarity": "rare",
-        "effect": { "bulletSize": 0.6, "damage": 4 }, "volatile": true,
+        "effect": { "bulletSize": 0.6, "flatDamage": 4 }, "runItem": true,
         "role": "core", "tags": ["size", "damage"], "budget": 10,
         "flavor": "던전에서 줍는 큰 탄 부적. 탄알이 커지고 피해가 늘지만 속도가 살짝 준다.",
         "visual": { "silhouette": "거대한 둥근 탄", "material": "두꺼운 외곽선 풍선", "palette": "gold:#ffc63a/#fff1b8", "focal_motif": "왕방울" }
@@ -375,21 +375,21 @@
       /* ===== H. 소모품 3종 (consumable · 휘발) ===== */
       {
         "id": "c_poppotion", "name": "팡 물약", "kind": "consumable", "rarity": "common",
-        "effect": { "heal": 1 }, "cost": 6, "volatile": true,
+        "effect": { "heal": 1 }, "cost": 6, "runItem": true,
         "role": "sustain", "tags": ["heal"], "budget": 4,
         "flavor": "체력 1칸 회복.",
         "visual": { "silhouette": "둥근 물약 병", "material": "유리병+분홍 액체", "palette": "scarlet:#ff8d7a/#ffffff", "focal_motif": "하트 거품" }
       },
       {
         "id": "c_megapotion", "name": "왕 물약", "kind": "consumable", "rarity": "rare",
-        "effect": { "heal": 3 }, "cost": 14, "volatile": true,
+        "effect": { "heal": 3 }, "cost": 14, "runItem": true,
         "role": "sustain", "tags": ["heal"], "budget": 9,
         "flavor": "체력 3칸 회복.",
         "visual": { "silhouette": "큰 둥근 물약 병", "material": "유리병+진분홍 액체+거품", "palette": "scarlet:#e83a52/#ffffff", "focal_motif": "큰 하트 거품" }
       },
       {
         "id": "c_energydrink", "name": "기력 드링크", "kind": "consumable", "rarity": "common",
-        "effect": { "energyRestore": 60 }, "cost": 5, "volatile": true,
+        "effect": { "energyRestore": 60 }, "cost": 5, "runItem": true,
         "role": "utility", "tags": ["energy"], "budget": 4,
         "flavor": "기력 60 즉시 회복.",
         "visual": { "silhouette": "둥근 캔", "material": "알루미늄 캔+청록 글로우", "palette": "hero:#3fd6a8/#ffffff", "focal_motif": "번개 마크" }
@@ -437,7 +437,7 @@
       }
     ],
     "affixes": [
-      { "id": "affix_dmg", "key": "damage", "name": "날카로운", "tiers": { "common": 1, "rare": 2, "epic": 3, "legendary": 4 }, "rarityWeight": 3 },
+      { "id": "affix_dmg", "key": "flatDamage", "name": "날카로운", "tiers": { "common": 1, "rare": 2, "epic": 3, "legendary": 4 }, "rarityWeight": 3 },
       { "id": "affix_pickup", "key": "pickupRadius", "name": "끌어당기는", "tiers": { "common": 20, "rare": 30, "epic": 45, "legendary": 60 }, "rarityWeight": 2 },
       { "id": "affix_armor", "key": "armor", "name": "단단한", "tiers": { "common": 1, "rare": 1, "epic": 1, "legendary": 2 }, "rarityWeight": 2 },
       { "id": "affix_luck", "key": "luck", "name": "운 좋은", "tiers": { "common": 1, "rare": 1, "epic": 2, "legendary": 2 }, "rarityWeight": 1 },
