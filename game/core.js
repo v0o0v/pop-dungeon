@@ -157,7 +157,7 @@
       scale: Object.assign({ parent: 'game' }, MobileHarness.scaleConfig(DESIGN_W, DESIGN_H)),
       physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: /[?&]debug=1/.test(location.search) } },
       // Phase 0.5 미로 스파이크 씬을 등록만 추가(?spike=1 일 때 Boot 가 직행). 미등록 시 본편 무영향.
-      scene: [PD.scenes.Boot, PD.scenes.Title, PD.scenes.Game, PD.scenes.HUD, PD.scenes.Result].concat(PD.scenes.SpikeMaze ? [PD.scenes.SpikeMaze] : [])
+      scene: [PD.scenes.Boot, PD.scenes.Title, PD.scenes.Game, PD.scenes.HUD, PD.scenes.Result].concat(PD.scenes.SpikeMaze ? [PD.scenes.SpikeMaze] : []).concat(PD.scenes.WorldMap ? [PD.scenes.WorldMap] : [])
     };
     // 스파이크 진입 플래그(Boot 가 읽어 Title 대신 SpikeMaze 로 분기)
     PD.SPIKE = /[?&]spike=1/.test(location.search);
