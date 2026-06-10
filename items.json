@@ -8,22 +8,22 @@
     {
       "id": "common",
       "name": "일반",
-      "color": "#cfd8e3"
+      "color": "#c6d4e6"
     },
     {
       "id": "rare",
       "name": "희귀",
-      "color": "#5ad1ff"
+      "color": "#3fd6a8"
     },
     {
       "id": "epic",
       "name": "영웅",
-      "color": "#c08bff"
+      "color": "#9a66e8"
     },
     {
       "id": "legendary",
       "name": "전설",
-      "color": "#ffcf4a"
+      "color": "#ffc63a"
     }
   ],
   "items": [
