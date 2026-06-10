@@ -43,8 +43,23 @@
 <!-- 트윈스틱/아날로그 이동 + 능력 런타임 -->
 <script src="engine/joystickkit.js"></script>
 <script src="engine/abilitykit.js"></script>
-<!-- 게임 데이터(스킬·아이템·사운드 단일 소스) → 게임 -->
-<script src="data.js"></script>
-<script src="game.js"></script>
+<!-- 게임 데이터(스킬·아이템·사운드 단일 소스) — data/ 분할(전역 누적, window.POP_*) -->
+<script src="data/style.data.js"></script>
+<script src="data/abilities.data.js"></script>
+<script src="data/items.data.js"></script>
+<script src="data/audio.data.js"></script>
+<!-- 게임 코드 — game/ 모듈 분할(전역 누적 window.PD, file:// 안전).
+     로드 순서: core(상수·PRNG·상태·헬퍼·config) → art/story/stats → scenes → PD.boot() -->
+<script src="game/core.js"></script>
+<script src="game/art.js"></script>
+<script src="game/story.js"></script>
+<script src="game/stats.js"></script>
+<script src="game/scenes/Boot.js"></script>
+<script src="game/scenes/Title.js"></script>
+<script src="game/scenes/Game.js"></script>
+<script src="game/scenes/HUD.js"></script>
+<script src="game/scenes/Result.js"></script>
+<!-- 모든 씬 클래스 등록 후 부팅 트리거(인라인 — file:// 안전) -->
+<script>window.PD.boot();</script>
 </body>
 </html>

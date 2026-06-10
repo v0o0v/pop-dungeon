@@ -1,8 +1,9 @@
 #!/usr/bin/env node
-// emit-json.mjs — data.js(단일 소스)에서 style/abilities/items/audio json 추출
+// emit-json.mjs — data/(단일 소스)에서 style/abilities/items/audio json 추출
 // ─────────────────────────────────────────────────────────────────────────────
-// data.js 는 브라우저 런타임이 쓰는 유일한 데이터 소스다. 린터들은 .json 을 읽으므로
-// 이 스크립트가 data.js 의 module.exports 를 읽어 .json 들을 동기화한다(드리프트 0).
+// data/ 디렉터리(style/abilities/items/audio.data.js)는 브라우저 런타임이 쓰는
+// 유일한 데이터 소스다. 린터들은 .json 을 읽으므로 이 스크립트가 data/index.mjs
+// 집계 진입점을 읽어 .json 들을 동기화한다(드리프트 0).
 // style.json 의 master_palette/role_colors 는 assets/palette.master.json 으로도
 // emit 한다(style-architect 상속 계약 — item §7 / ability §8 / 생성기가 읽는 상류 진실).
 //   node tools/emit-json.mjs
@@ -13,7 +14,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '..')
-const mod = await import(pathToFileURL(resolve(root, 'data.js')).href)
+const mod = await import(pathToFileURL(resolve(root, 'data/index.mjs')).href)
 const { STYLE, ABILITIES, ITEMS, AUDIO } = mod.default || mod
 
 const out = [
