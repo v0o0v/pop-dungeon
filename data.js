@@ -1,9 +1,10 @@
 /* ============================================================================
  * 팡팡 던전 (Pop Dungeon) — 게임 데이터 단일 소스
  * ----------------------------------------------------------------------------
- * 스킬(ability-architect) · 아이템(item-architect) · 사운드(sound-architect) 스펙을
- * 한 파일에서 정의한다. 브라우저에서는 window.POP_* 전역으로, Node 에서는 module.exports
- * 로 노출 → tools/emit-json.mjs 가 이 한 소스에서 abilities.json/items.json/audio.json 을
+ * 스타일(style-architect) · 스킬(ability-architect) · 아이템(item-architect) ·
+ * 사운드(sound-architect) 스펙을 한 파일에서 정의한다. 브라우저에서는 window.POP_* 전역으로,
+ * Node 에서는 module.exports 로 노출 → tools/emit-json.mjs 가 이 한 소스에서
+ * style.json/abilities.json/items.json/audio.json + assets/palette.master.json 을
  * 추출해 각 린터로 검증한다(단일 소스, 드리프트 방지, 오프라인 file:// 안전).
  *
  * 모든 에셋·사운드·이름은 절차 생성 오리지널(CC0/IP-safe). 엔터더건전 등 원작
@@ -11,6 +12,61 @@
  * ==========================================================================*/
 (function (g) {
   'use strict';
+
+  // ===========================================================================
+  // 0) 비주얼 스타일 (style-architect 계약 — lint-style.mjs · engine/stylekit.js)
+  //    게임 전체 색의 상류 권위(단일 진실). game.js 는 모든 색을 이 램프/역할색에서
+  //    참조하고, emit-json.mjs 가 style.json + assets/palette.master.json 으로 추출한다.
+  //    무드: candy-pop-dungeon — 차가운 보라 어둠의 돌던전 위, 사탕처럼 쨍한 마스코트.
+  //    매체: vector(스무스) — game.js render.pixelArt:false 와 1:1 (D7).
+  // ===========================================================================
+  var STYLE = {
+    "slug": "pop-dungeon",
+    "schema_version": 1,
+    "medium": "vector",
+    "tier": 2,
+    "mood": "candy-pop-dungeon",
+    "master_palette": {
+      "ramps": {
+        "hero":   ["#12463f", "#1ba79c", "#33d2bd", "#7af0dc"],
+        "slime":  ["#234d18", "#2c6b22", "#3a8e2a", "#4fae3a", "#9be86b"],
+        "royal":  ["#3e1f70", "#7a3fd0", "#a86bff", "#c08bff", "#e3c8ff"],
+        "bat":    ["#2f3270", "#5a5eb0", "#6b6fbf", "#9a9ee8"],
+        "ember":  ["#6e2418", "#d4583a", "#ff9f6b"],
+        "candy":  ["#2a0e18", "#5a0f28", "#d12a5a", "#ff4f7a", "#ff6b9a", "#ff8fb0"],
+        "gold":   ["#8a5a10", "#d98a1f", "#ff9f1a", "#ffd34a", "#fff6c0"],
+        "cyan":   ["#1a3a44", "#2bb6e0", "#7af0ff", "#eaffff"],
+        "steel":  ["#10243a", "#22406e", "#4a78c8", "#9ad0ff"],
+        "portal": ["#285ac8", "#5ab4ff", "#c8ebff"],
+        "wood":   ["#3e2010", "#7a4422", "#b06a3a", "#caa06a"],
+        "stone":  ["#241640", "#3a2a60", "#6a4ad0", "#b89cff"],
+        "mist":   ["#2a3050", "#44364a", "#6a7a90", "#9fb3c8", "#cfd8e3"]
+      },
+      "neutrals": { "black": "#1a2233", "white": "#ffffff" },
+      "background": "#161a2e"
+    },
+    "role_colors": {
+      "player": "#33d2bd",
+      "enemy": "#ff8fb0",
+      "danger": "#ff4f7a",
+      "pickup": "#ffd34a",
+      "ui_accent": "#7af0ff"
+    },
+    "variants": {
+      "floor_backgrounds": ["#1a1030", "#101a30", "#102a20", "#2a1018", "#101830", "#281a30", "#301a10", "#102828", "#281028", "#1a1040"],
+      "boss_tints": ["#b0ff8a", "#8affd0", "#ffb0b0", "#ff9a6b", "#ffd36b", "#c8a0ff", "#ff6bd0"]
+    },
+    "proportions": { "head_to_body": "1:1", "silhouette": "round-blob", "min_feature_px": 2 },
+    "line": { "outline": "full", "outline_color": "darker-of-fill", "weight_px": 2 },
+    "shading": { "model": "soft", "light_dir": "NW", "ramp_steps": 3, "hue_shift": "warm-light-cool-shadow" },
+    "render": { "pixelArt": false, "antialias": true, "roundPixels": false },
+    "lintConfig": {
+      "min_contrast_ratio": 3.0,
+      "max_palette_colors": 80,
+      "known_moods": ["candy-pop-dungeon", "custom"],
+      "ip_redwords": ["gungeon", "enter the gungeon", "엔터더건전", "isaac", "soul knight", "nuclear throne", "mario", "zelda"]
+    }
+  };
 
   // ===========================================================================
   // 1) 스킬 / 능력 (ability-architect 계약 — lint-abilities.mjs)
@@ -329,8 +385,9 @@
     "balanceConfig": { "maxReverbDecay": 4, "bpmTolerance": 12 }
   };
 
+  g.POP_STYLE = STYLE;
   g.POP_ABILITIES = ABILITIES;
   g.POP_ITEMS = ITEMS;
   g.POP_AUDIO = AUDIO;
-  if (typeof module !== 'undefined' && module.exports) module.exports = { ABILITIES: ABILITIES, ITEMS: ITEMS, AUDIO: AUDIO };
+  if (typeof module !== 'undefined' && module.exports) module.exports = { STYLE: STYLE, ABILITIES: ABILITIES, ITEMS: ITEMS, AUDIO: AUDIO };
 })(typeof window !== 'undefined' ? window : globalThis);

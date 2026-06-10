@@ -1,0 +1,124 @@
+{
+  "slug": "pop-dungeon",
+  "master_palette": {
+    "ramps": {
+      "hero": [
+        "#12463f",
+        "#1ba79c",
+        "#33d2bd",
+        "#7af0dc"
+      ],
+      "slime": [
+        "#234d18",
+        "#2c6b22",
+        "#3a8e2a",
+        "#4fae3a",
+        "#9be86b"
+      ],
+      "royal": [
+        "#3e1f70",
+        "#7a3fd0",
+        "#a86bff",
+        "#c08bff",
+        "#e3c8ff"
+      ],
+      "bat": [
+        "#2f3270",
+        "#5a5eb0",
+        "#6b6fbf",
+        "#9a9ee8"
+      ],
+      "ember": [
+        "#6e2418",
+        "#d4583a",
+        "#ff9f6b"
+      ],
+      "candy": [
+        "#2a0e18",
+        "#5a0f28",
+        "#d12a5a",
+        "#ff4f7a",
+        "#ff6b9a",
+        "#ff8fb0"
+      ],
+      "gold": [
+        "#8a5a10",
+        "#d98a1f",
+        "#ff9f1a",
+        "#ffd34a",
+        "#fff6c0"
+      ],
+      "cyan": [
+        "#1a3a44",
+        "#2bb6e0",
+        "#7af0ff",
+        "#eaffff"
+      ],
+      "steel": [
+        "#10243a",
+        "#22406e",
+        "#4a78c8",
+        "#9ad0ff"
+      ],
+      "portal": [
+        "#285ac8",
+        "#5ab4ff",
+        "#c8ebff"
+      ],
+      "wood": [
+        "#3e2010",
+        "#7a4422",
+        "#b06a3a",
+        "#caa06a"
+      ],
+      "stone": [
+        "#241640",
+        "#3a2a60",
+        "#6a4ad0",
+        "#b89cff"
+      ],
+      "mist": [
+        "#2a3050",
+        "#44364a",
+        "#6a7a90",
+        "#9fb3c8",
+        "#cfd8e3"
+      ]
+    },
+    "neutrals": {
+      "black": "#1a2233",
+      "white": "#ffffff"
+    },
+    "background": "#161a2e"
+  },
+  "role_colors": {
+    "player": "#33d2bd",
+    "enemy": "#ff8fb0",
+    "danger": "#ff4f7a",
+    "pickup": "#ffd34a",
+    "ui_accent": "#7af0ff"
+  },
+  "variants": {
+    "floor_backgrounds": [
+      "#1a1030",
+      "#101a30",
+      "#102a20",
+      "#2a1018",
+      "#101830",
+      "#281a30",
+      "#301a10",
+      "#102828",
+      "#281028",
+      "#1a1040"
+    ],
+    "boss_tints": [
+      "#b0ff8a",
+      "#8affd0",
+      "#ffb0b0",
+      "#ff9a6b",
+      "#ffd36b",
+      "#c8a0ff",
+      "#ff6bd0"
+    ]
+  }
+}

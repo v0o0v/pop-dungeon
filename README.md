@@ -5,7 +5,7 @@
 **자동조준**으로 쏘며, **아이템 조합**으로 매 런 다른 빌드를 만든다.
 
 - **플랫폼:** 모바일 웹뷰(Android WebView) · **세로 9:16**(540×960) · 오프라인
-- **엔진:** Phaser 4.1.0 + VectorForge(카툰 그래픽) + SoundForge(절차 사운드) + AbilityKit + JoystickKit
+- **엔진:** Phaser 4.1.0 + VectorForge(카툰 그래픽) + StyleKit(스타일 단일 진실) + SoundForge(절차 사운드) + AbilityKit + JoystickKit
 - **에셋:** 100% 코드 생성 오리지널(CC0/IP-safe) — 외부 이미지·오디오 파일 0개
 
 ## 조작
@@ -39,15 +39,17 @@ http://127.0.0.1:8777/index.html
 ```
 enterthegundun/
 ├── index.html          # 모바일 하니스 + 스크립트 로드
-├── game.js             # 게임 본체(씬·던전·전투·보스·아이템·스킬·주스)
-├── data.js             # 스킬·아이템·사운드 단일 소스(window.POP_* 전역)
+├── game.js             # 게임 본체(씬·던전·전투·보스·아이템·스킬·주스) — 색은 전부 STYLE 참조
+├── data.js             # 스타일·스킬·아이템·사운드 단일 소스(window.POP_* 전역)
+├── style.json          # data.js 에서 추출(린트용) — style-architect 계약
 ├── abilities.json      # data.js 에서 추출(린트용) — ability-architect 계약
 ├── items.json          # data.js 에서 추출(린트용) — item-architect 계약
 ├── audio.json          # data.js 에서 추출(린트용) — sound-architect 계약
-├── ABILITIES.md / ITEMS.md / AUDIO.md   # 설계 바이블
+├── assets/palette.master.json   # 마스터 팔레트(상속용 — item/ability 아이콘 생성기)
+├── STYLE.md / ABILITIES.md / ITEMS.md / AUDIO.md   # 설계 바이블
 ├── CREDITS.txt         # 라이선스
 ├── tools/emit-json.mjs # data.js → *.json 추출(드리프트 0)
-└── engine/             # Phaser·Tone·VectorForge·SoundForge·AbilityKit·JoystickKit·MobileHarness
+└── engine/             # Phaser·Tone·VectorForge·StyleKit·SoundForge·AbilityKit·JoystickKit·MobileHarness
 ```
 
 ## 데이터 검증(린트)
@@ -62,6 +64,12 @@ node ../JSGameEngineForCC/skills/ability-architect/tools/lint-abilities.mjs abil
 ```
 
 (items/audio 도 동일. 현재 셋 다 error/warn/info 0 통과.)
+
+스타일(아트 디렉션)은 style-architect 린터로 검증한다(error/warn 0 통과 — STYLE.md §7 검수 로그 참조):
+
+```bash
+node <web-game-builder>/skills/wgf-style-architect/tools/lint-style.mjs style.json
+```
 
 ## Android 패키징(오프라인 앱)
 이 폴더 전체를 WebView 컨테이너로 감싸면 오프라인 Android 앱이 된다:

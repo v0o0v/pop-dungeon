@@ -8,6 +8,7 @@
   - Phaser 4.1.0            MIT License   (engine/phaser.min.js, engine/phaser.LICENSE.txt)
   - Tone.js v15            MIT License   (engine/tone.js, engine/tone.LICENSE.txt)
   - VectorForge            web-game-builder 엔진 (절차 벡터 그래픽 생성기)
+  - StyleKit               web-game-builder 엔진 (스타일 단일 진실 어댑터 — 팔레트/역할색)
   - SoundForge             web-game-builder 엔진 (Tone.js 기반 절차 사운드 엔진)
   - AbilityKit             web-game-builder 엔진 (능력/스킬 데이터 런타임)
   - JoystickKit            web-game-builder 엔진 (가상 조이스틱)
