@@ -17,6 +17,21 @@
       if (PD.SPIKE && PD.scenes.SpikeMaze) { this.scene.start('SpikeMaze'); return; }
       // Phase 2 WorldMap: ?worldmap=1 이면 Title 대신 WorldMap 으로 직행(개발 테스트)
       if (PD.WORLDMAP && PD.scenes.WorldMap) { this.scene.start('WorldMap'); return; }
+      // Phase 2 Village: ?village=1 이면 Title 대신 Village 로 직행(개발 테스트)
+      if (PD.VILLAGE && PD.scenes.Village) { this.scene.start('Village'); return; }
+      // L6a 던전 직행: ?dungeon=1[&region=N&floor=M] 이면 Title 대신 Dungeon 으로(개발 진입).
+      //   RUN 을 셋업하고 HUD 도 함께 띄운다(Title.start 와 동일 계약).
+      if (PD.DUNGEON_DIRECT && PD.scenes.Dungeon) {
+        var qs = new URLSearchParams(location.search);
+        PD.SAVE = PD.SAVE || (PD.SaveStore ? PD.SaveStore.load() : {});
+        PD.RUN = PD.freshRun ? PD.freshRun() : {};
+        var region = parseInt(qs.get('region'), 10); if (region > 0) PD.RUN.region = region;
+        var floor = parseInt(qs.get('floor'), 10); if (floor > 0) PD.RUN.floor = floor;
+        if (GAME_AUDIO.unlock) { GAME_AUDIO.unlock(); GAME_AUDIO.startBgm && GAME_AUDIO.startBgm(); }
+        this.scene.start('Dungeon');
+        this.scene.launch('HUD');
+        return;
+      }
       this.scene.start('Title');
     }
   });

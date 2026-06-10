@@ -54,6 +54,8 @@
 <script src="data/quests.data.js"></script>
 <script src="data/codex.data.js"></script>
 <script src="data/floors/templates.js"></script>
+<!-- floors 샘플 층(살아있는 참조) — Dungeon 폴백 데이터원. Phase 3 양산 데이터(POP_FLOORS)가 있으면 그게 우선. -->
+<script src="data/floors/region-01.sample.js"></script>
 <!-- 게임 코드 — game/ 모듈 분할(전역 누적 window.PD, file:// 안전).
      로드 순서: core(상수·PRNG·상태·헬퍼·config) → art/story/stats → scenes → PD.boot() -->
 <script src="game/core.js"></script>
@@ -63,16 +65,31 @@
 <!-- 능력 패시브 배선(stats.js 소스[4] 계약: PD.getPassiveEffects) + 세이브 v2 -->
 <script src="game/abilities-wiring.js"></script>
 <script src="game/save.js"></script>
-<!-- Phase 0.5 미로 런타임 스파이크 데이터(?spike=1 진입) — 신규, 본편 비침습 -->
+<!-- 던전 좌표계: Room/Maze 추상화(스파이크) + 타일 물리·렌더 + floor→방 그래프 어댑터(L6a) -->
 <script src="game/room.js"></script>
+<script src="game/tiles.js"></script>
+<script src="game/roomgraph.js"></script>
 <script src="game/scenes/Boot.js"></script>
 <script src="game/scenes/Title.js"></script>
-<script src="game/scenes/Game.js"></script>
+<!-- 던전 본체(L6a — GameScene 대체: ARENA→room.bounds 좌표계 + 타일 물리) -->
+<script src="game/scenes/Dungeon.js"></script>
 <script src="game/scenes/HUD.js"></script>
 <script src="game/scenes/Result.js"></script>
-<!-- Phase 0.5 미로 런타임 스파이크 씬(?spike=1) — Game 비수정, 신규 씬 -->
+<!-- Phase 0.5 미로 런타임 스파이크 씬(?spike=1) — 신규 씬, 본편 비침습 -->
 <script src="game/scenes/SpikeMaze.js"></script>
 <script src="game/scenes/WorldMap.js"></script>
+<!-- 마을 기능 UI 모듈(L5) — Modal 기반 모달 6종 + NPC 대화. Village 보다 먼저 로드 -->
+<script src="game/ui/Modal.js"></script>
+<script src="game/ui/Inventory.js"></script>
+<script src="game/ui/Shop.js"></script>
+<script src="game/ui/Forge.js"></script>
+<script src="game/ui/SkillTree.js"></script>
+<script src="game/ui/StatAlloc.js"></script>
+<script src="game/ui/QuestBoard.js"></script>
+<script src="game/ui/Codex.js"></script>
+<script src="game/ui/Dialogue.js"></script>
+<!-- 마을 허브 씬(L5) — 솔뫼 마을 NPC 6종 + 출정 -->
+<script src="game/scenes/Village.js"></script>
 <!-- Capacitor 네이티브 백버튼 정책 (브라우저에서는 no-op) -->
 <script src="game/native.js"></script>
 <!-- 모든 씬 클래스 등록 후 부팅 트리거(인라인 — file:// 안전) -->

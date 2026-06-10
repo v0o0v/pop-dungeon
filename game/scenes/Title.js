@@ -64,10 +64,17 @@
       var self = this, started = false;
       function start() {
         if (started) return; started = true;
-        if (GAME_AUDIO.unlock) { GAME_AUDIO.unlock(); GAME_AUDIO.startBgm(); }
+        if (GAME_AUDIO.unlock) { GAME_AUDIO.unlock(); }
+        // Hades식 허브: 탭 → 마을(Village). 출정·런 준비는 Village 가 담당.
+        //   Village 미등록(점진 통합) 시 던전 직행으로 안전 폴백(L6a 흐름 보존).
+        if (self.scene.get('Village')) {
+          self.scene.start('Village');
+          return;
+        }
+        if (GAME_AUDIO.startBgm) GAME_AUDIO.startBgm();
         PD.RUN = PD.freshRun();
         META.runs++; PD.saveMeta();
-        self.scene.start('Game');
+        self.scene.start('Dungeon');   // L6a: GameScene → Dungeon(던전 본체)
         self.scene.launch('HUD');
       }
       this.input.once('pointerdown', start);

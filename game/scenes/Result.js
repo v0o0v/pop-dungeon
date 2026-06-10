@@ -51,7 +51,7 @@
         if (go) return; go = true;
         PD.RUN = PD.freshRun(); META.runs++; PD.saveMeta();
         if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('combat');
-        self.scene.start('Game'); self.scene.launch('HUD');
+        self.scene.start('Dungeon'); self.scene.launch('HUD');   // L6a: GameScene → Dungeon
       }
       this.time.delayedCall(600, function () {
         self.input.once('pointerdown', restart);
