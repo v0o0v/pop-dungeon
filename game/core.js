@@ -138,10 +138,11 @@
     if (!game) return;
     PopDungeon._t = (PopDungeon._t || 0) + dt;
     var time = PopDungeon._t;
-    // 활성 씬을 등록 순서대로 한 스텝 구동(Game → HUD)
+    // 활성 씬을 등록 순서대로 한 스텝 구동(Game → HUD). 비활성 씬은 stepScene 가 무시.
     var sm = game.scene;
     stepScene(sm.getScene('Game'), time, dt);
     stepScene(sm.getScene('HUD'), time, dt);
+    if (sm.getScene('SpikeMaze')) stepScene(sm.getScene('SpikeMaze'), time, dt); // Phase 0.5 스파이크(활성 시만)
     return time;
   };
 
@@ -155,8 +156,11 @@
       render: Object.assign(StyleKit.renderConfig(STYLE), { preserveDrawingBuffer: /[?&]capture=1/.test(location.search) }),
       scale: Object.assign({ parent: 'game' }, MobileHarness.scaleConfig(DESIGN_W, DESIGN_H)),
       physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: /[?&]debug=1/.test(location.search) } },
-      scene: [PD.scenes.Boot, PD.scenes.Title, PD.scenes.Game, PD.scenes.HUD, PD.scenes.Result]
+      // Phase 0.5 미로 스파이크 씬을 등록만 추가(?spike=1 일 때 Boot 가 직행). 미등록 시 본편 무영향.
+      scene: [PD.scenes.Boot, PD.scenes.Title, PD.scenes.Game, PD.scenes.HUD, PD.scenes.Result].concat(PD.scenes.SpikeMaze ? [PD.scenes.SpikeMaze] : [])
     };
+    // 스파이크 진입 플래그(Boot 가 읽어 Title 대신 SpikeMaze 로 분기)
+    PD.SPIKE = /[?&]spike=1/.test(location.search);
     var game = new Phaser.Game(config);
     window.PopDungeon = Object.assign(window.PopDungeon || {}, { game: game, input: GAME_INPUT, audio: GAME_AUDIO, meta: function () { return PD.META; } });
     return game;
