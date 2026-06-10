@@ -65,6 +65,8 @@
       for (var i = 0; i < ids.length; i++) {
         PD.Tiles.bake(this, this.rooms[ids[i]], { floorGfx: this.floorGfx, wallGfx: this.wallGfx, wallGroup: this.wallG });
       }
+      // (L6b) 방 사이 복도 바닥 렌더(문 어긋남 매끄럽게 연결 — walkable, 콜라이더 없음)
+      this.bakeCorridors(this.graph.corridors);
       this.drawTorches();
 
       // ── (L6b) 문 잠금 구조 — 닫힌 문 콜라이더 풀 + 문 비주얼 graphics ──────────────
@@ -166,17 +168,22 @@
       return PD.RoomGraph.build(floor);
     },
 
-    // Phase 3 floors 데이터에서 현재 region/floor 의 층을 탐색(데이터 있으면 사용)
+    // Phase 3 floors 데이터에서 현재 floor(1~100)의 층을 탐색(데이터 있으면 사용).
+    //   lane 간 등록 규약 드리프트 흡수: region-01/02 는 window.POP_FLOORS(공유 배열)에 push,
+    //   region-03~10 은 window.POP_FLOORS_R03..R10 (개별 전역)에 할당. 양쪽 모두 수집한다.
     findFloorData: function (RUN) {
-      var region = RUN.region || 1, floor = RUN.floor || 1;
-      // 전역에 등록된 floors 배열 후보들(Phase 3 양산이 채움). 샘플도 포함.
+      var floor = RUN.floor || 1;
       var sources = [];
-      if (window.POP_FLOORS) sources.push(window.POP_FLOORS);                 // 통합 인덱스(있으면)
-      if (window.POP_FLOORS_R01_SAMPLE) sources.push(window.POP_FLOORS_R01_SAMPLE);
+      if (Array.isArray(window.POP_FLOORS)) sources.push(window.POP_FLOORS);       // region-01/02 공유 배열
+      // region-03~10 개별 전역(POP_FLOORS_R03 ~ R10) — 숫자 0패딩 2자리
+      for (var r = 3; r <= 10; r++) {
+        var key = 'POP_FLOORS_R' + (r < 10 ? '0' + r : r);
+        if (Array.isArray(window[key])) sources.push(window[key]);
+      }
+      // 폴백 샘플(데이터 미연결 개발 진입)
+      if (Array.isArray(window.POP_FLOORS_R01_SAMPLE)) sources.push(window.POP_FLOORS_R01_SAMPLE);
       for (var s = 0; s < sources.length; s++) {
         var arr = sources[s];
-        if (!Array.isArray(arr)) continue;
-        // floor.id 'floor-NN' 또는 region+floor 매칭
         for (var i = 0; i < arr.length; i++) {
           var f = arr[i];
           var fnum = parseInt(String(f.id || '').replace(/[^0-9]/g, ''), 10);
@@ -211,9 +218,35 @@
       return room.center();
     },
 
-    // ── 카메라 경계를 현재 방 outer rect 로(스파이크 동일) ───────────────────────
+    // ── 카메라 경계를 현재 방 outer rect 로(L6c 가 복도 포함으로 정교화) ─────────────
     applyCameraBounds: function (room) {
       this.cameras.main.setBounds(room.ox, room.oy, room.ow, room.oh);
+    },
+
+    // ── (L6b) 복도 바닥 베이크 — 방 사이 gap 을 잇는 walkable 경로(콜라이더 없음) ────
+    bakeCorridors: function (corridors) {
+      if (!corridors || !corridors.length) return;
+      var g = this.floorGfx;
+      for (var i = 0; i < corridors.length; i++) {
+        var c = corridors[i];
+        // 복도 바닥(돌색) — 방 바닥과 동일 결, 줄눈 약하게
+        g.fillStyle(rampInt('stone', 0), 1);
+        g.fillRect(c.x, c.y, c.w, c.h);
+        g.fillStyle(rampInt('stone', 1), 0.6);
+        g.fillRect(c.x, c.y, c.w, 1);
+        g.fillRect(c.x, c.y + c.h - 1, c.w, 1);
+      }
+    },
+
+    // 점이 복도 안인지(방 전환 판정 보조 — 복도에 있으면 현재 방 유지)
+    inCorridor: function (x, y) {
+      var cs = this.graph.corridors;
+      if (!cs) return false;
+      for (var i = 0; i < cs.length; i++) {
+        var c = cs[i];
+        if (x >= c.x && x <= c.x + c.w && y >= c.y && y <= c.y + c.h) return true;
+      }
+      return false;
     },
 
     // ── 횃불 광 풀(현재 방 네 모서리 — 그려진 빛, 동적 라이팅 아님) ─────────────────
@@ -1005,12 +1038,21 @@
       }
     },
 
-    // 층의 모든 전투 방(스폰된 방)이 클리어됐는지
+    // 방이 전투 잠재력(스폰 정의·'E' 마커·보스)을 가진 전투 방인지(정적 판정)
+    isCombatRoom: function (rm) {
+      if (rm.kindHint === 'boss') return true;
+      if (rm.spawnDefs && rm.spawnDefs.length) return true;
+      if (rm.parsed && rm.parsed.spawns && rm.parsed.spawns.length) return true;
+      return false;
+    },
+
+    // 층의 모든 전투 방(정적 정의 기준)이 클리어됐는지 — 미입실 방도 포함해야
+    //   첫 방 클리어로 조기 하강 포탈이 뜨는 결함을 막는다.
     allCombatCleared: function () {
-      var rs = this.rooms, ok = true;
+      var rs = this.rooms, self = this, ok = true;
       Object.keys(rs).forEach(function (id) {
         var rm = rs[id];
-        if (rm.spawned && !rm.cleared) ok = false;
+        if (self.isCombatRoom(rm) && !rm.cleared) ok = false;
       });
       return ok;
     },

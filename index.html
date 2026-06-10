@@ -54,7 +54,18 @@
 <script src="data/quests.data.js"></script>
 <script src="data/codex.data.js"></script>
 <script src="data/floors/templates.js"></script>
-<!-- floors 샘플 층(살아있는 참조) — Dungeon 폴백 데이터원. Phase 3 양산 데이터(POP_FLOORS)가 있으면 그게 우선. -->
+<!-- Phase 3 핸드 디자인 100층 (region 01~10) — Dungeon findFloorData가 수집 -->
+<script src="data/floors/region-01.floors.js"></script>
+<script src="data/floors/region-02.floors.js"></script>
+<script src="data/floors/region-03.floors.js"></script>
+<script src="data/floors/region-04.floors.js"></script>
+<script src="data/floors/region-05.floors.js"></script>
+<script src="data/floors/region-06.floors.js"></script>
+<script src="data/floors/region-07.floors.js"></script>
+<script src="data/floors/region-08.floors.js"></script>
+<script src="data/floors/region-09.floors.js"></script>
+<script src="data/floors/region-10.floors.js"></script>
+<!-- floors 샘플 층(살아있는 참조) — Dungeon 최후 폴백 데이터원(별도 전역, 중복 없음) -->
 <script src="data/floors/region-01.sample.js"></script>
 <!-- 게임 코드 — game/ 모듈 분할(전역 누적 window.PD, file:// 안전).
      로드 순서: core(상수·PRNG·상태·헬퍼·config) → art/story/stats → scenes → PD.boot() -->
@@ -69,6 +80,8 @@
 <script src="game/room.js"></script>
 <script src="game/tiles.js"></script>
 <script src="game/roomgraph.js"></script>
+<!-- 미니맵 렌더러(L6c) — 방 그래프 미니맵(HUD 오버레이) -->
+<script src="game/minimap.js"></script>
 <script src="game/scenes/Boot.js"></script>
 <script src="game/scenes/Title.js"></script>
 <!-- 던전 본체(L6a — GameScene 대체: ARENA→room.bounds 좌표계 + 타일 물리) -->

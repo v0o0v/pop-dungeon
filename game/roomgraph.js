@@ -221,7 +221,7 @@
     });
 
     // graph 간선 → 양방향 door 연결. 배치된 슬롯의 상대 방향으로 dir 결정.
-    var edges = [];
+    var edges = [], corridors = [];
     (floor.graph || []).forEach(function (e) {
       var a = rooms[e.from], b = rooms[e.to];
       if (!a || !b) return;
@@ -232,6 +232,10 @@
       // 문 자리 tiles 뚫기 — grid 의 'D' 위치(있으면) 우선, 없으면 변 중앙
       openDoorTile(a, dir);
       openDoorTile(b, OPP[dir]);
+      // 방 사이 여백(2타일 gap)을 잇는 복도 셀 생성 — 두 문 월드중심을 L자/직선으로 연결.
+      //   문 셀이 서로 어긋나도(템플릿 자유 위치) 복도가 매끄럽게 연결한다. 복도 셀은
+      //   바닥(walkable, 콜라이더 없음)으로 Dungeon 이 베이크한다.
+      corridors.push.apply(corridors, buildCorridor(a, dir, b, OPP[dir]));
       edges.push({ from: e.from, to: e.to, dir: dir });
     });
 
@@ -241,12 +245,51 @@
       order: order,
       start: startId,
       edges: edges,
+      corridors: corridors,    // [{x,y,w,h}] 월드 사각형(타일 정렬) — 바닥 복도
       special: floor.special || {},
       floorId: floor.id || null,
       theme: floor.theme || null,
       region: floor.region || null
     };
     return graph;
+  }
+
+  // 두 방의 문 월드중심을 L자(또는 직선) 복도로 연결 — 타일 정렬 사각형 목록 반환.
+  //   dir 은 a→b 방향(right/left/down/up). 복도는 a 문 밖 → b 문 밖을 1타일 폭으로 잇는다.
+  function buildCorridor(a, dirA, b, dirB) {
+    var da = doorCenter(a, dirA), db = doorCenter(b, dirB);
+    var segs = [];
+    // a 문에서 한 칸 바깥 점, b 문에서 한 칸 바깥 점
+    var ax = da.x, ay = da.y, bx = db.x, by = db.y;
+    if (dirA === 'right') ax += TILE; else if (dirA === 'left') ax -= TILE;
+    else if (dirA === 'down') ay += TILE; else if (dirA === 'up') ay -= TILE;
+    if (dirB === 'right') bx += TILE; else if (dirB === 'left') bx -= TILE;
+    else if (dirB === 'down') by += TILE; else if (dirB === 'up') by -= TILE;
+    // 수평 우선 L자: (ax,ay) → (bx,ay) → (bx,by). 문 중심 포함하도록 양끝 1타일 확장.
+    pushRect(segs, da.x, da.y, ax, ay);   // a 문 → a 바깥
+    pushRect(segs, ax, ay, bx, ay);       // 수평 이동
+    pushRect(segs, bx, ay, bx, by);       // 수직 이동
+    pushRect(segs, bx, by, db.x, db.y);   // b 바깥 → b 문
+    return segs;
+  }
+
+  // 문 셀의 월드중심(doorCells 우선, 없으면 변 중앙)
+  function doorCenter(room, dir) {
+    var cell = room.doorCells && room.doorCells[dir];
+    if (cell) return { x: room.ox + (cell.c + 0.5) * TILE, y: room.oy + (cell.r + 0.5) * TILE };
+    var t = room.doorTile(dir);
+    return { x: room.ox + (t.c + 0.5) * TILE, y: room.oy + (t.r + 0.5) * TILE };
+  }
+
+  // 두 점을 잇는 1타일 폭 사각형(타일 정렬). 같은 점이면 1타일 셀.
+  function pushRect(segs, x1, y1, x2, y2) {
+    var minx = Math.min(x1, x2), maxx = Math.max(x1, x2);
+    var miny = Math.min(y1, y2), maxy = Math.max(y1, y2);
+    // 타일 격자에 스냅
+    var gx = Math.floor(minx / TILE) * TILE, gy = Math.floor(miny / TILE) * TILE;
+    var gw = Math.max(TILE, (Math.ceil(maxx / TILE) * TILE) - gx);
+    var gh = Math.max(TILE, (Math.ceil(maxy / TILE) * TILE) - gy);
+    segs.push({ x: gx, y: gy, w: gw, h: gh });
   }
 
   // 두 슬롯의 상대 방향(인접일 때만 dir, 아니면 null)
