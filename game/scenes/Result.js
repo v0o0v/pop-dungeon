@@ -47,15 +47,22 @@
       this.tweens.add({ targets: tip, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
 
       var self = this, go = false;
-      function restart() {
+      // 탭 시 마을(Village)로 복귀 — Hades식 허브 루프(플랜 §2.1·AC#5: Result→마을).
+      //   commitRun(영속 커밋)은 Dungeon.gameOver/win 에서 이미 수행됨. 여기선 RUN 만 리셋하고
+      //   마을로 돌아가 상점·강화·스킬분배 후 재출정한다. Village 미등록 시 Dungeon 폴백(회귀 안전).
+      function leaveResult() {
         if (go) return; go = true;
         PD.RUN = PD.freshRun(); META.runs++; PD.saveMeta();
-        if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('combat');
-        self.scene.start('Dungeon'); self.scene.launch('HUD');   // L6a: GameScene → Dungeon
+        if (self.scene.get('Village')) {
+          self.scene.start('Village');
+        } else {
+          if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('combat');
+          self.scene.start('Dungeon'); self.scene.launch('HUD');   // 폴백(개발 직행·회귀)
+        }
       }
       this.time.delayedCall(600, function () {
-        self.input.once('pointerdown', restart);
-        self.input.keyboard.once('keydown-SPACE', restart);
+        self.input.once('pointerdown', leaveResult);
+        self.input.keyboard.once('keydown-SPACE', leaveResult);
       });
     }
   });

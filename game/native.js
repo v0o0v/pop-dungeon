@@ -103,7 +103,7 @@
           // 최상위 씬 key 반환 (HUD 는 항상 overlay 이므로 제외)
           for (let i = scenes.length - 1; i >= 0; i--) {
             const key = scenes[i].sys && scenes[i].sys.settings && scenes[i].sys.settings.key;
-            if (key && key !== 'HUDScene') return key;
+            if (key && key !== 'HUD') return key;
           }
         }
       }
