@@ -126,11 +126,20 @@ cd android
 
 ---
 
-## 현재 환경 상태 (2026-06-10 기준)
+## 현재 환경 상태 (2026-06-10 기준, 실빌드 검증 완료)
 
 - Node.js: v24.13.0 ✓
 - npm: 11.14.1 ✓
 - JAVA_HOME: `C:\Program Files\Android\Android Studio\jbr` ✓
-- ANDROID_HOME: **미설정** — 위 1단계 필요
-- `npx cap sync android`: **성공** ✓ (SDK 없이도 동기화 가능)
-- `gradlew assembleDebug`: ANDROID_HOME 설정 후 시도 가능
+- Android SDK: `C:\Users\v0o0v\AppData\Local\Android\Sdk` 설치됨 ✓ (platforms API 34/36, build-tools 34~36.1, 라이선스 동의 완료)
+- ANDROID_HOME: 시스템 환경변수는 미설정 — 빌드 세션에서 지정하면 충분:
+
+  ```powershell
+  $env:ANDROID_HOME = "$env:LOCALAPPDATA\Android\Sdk"
+  ```
+
+- `npx cap sync android`: **성공** ✓
+- `gradlew assembleDebug`: **성공** ✓ — `app-debug.apk` 4.25MB 산출 (Gradle 8.2.1)
+
+> 과거 빌드 실패 이력: `drawable/splash` 리소스 중복(`splash.png` 템플릿 잔재 vs `splash.xml` 오리지널).
+> 템플릿 PNG 11개 제거로 해결 — 스플래시는 `splash.xml`(torchlit 팔레트, CC0) 단일 진실.
