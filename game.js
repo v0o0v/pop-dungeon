@@ -165,7 +165,7 @@
   function bakeArt(scene) {
     function bakePx(key, w, h, frames) { VectorForge.bake(scene, key, { w: w, h: h, ss: 1, frames: frames }); }
 
-    // 플레이어 '팡이' — 민트 2등신 치비 팝거너(시그니처: 어둠 속 횃불빛 받은 민트 히어로)
+    // 플레이어 '호두' — 민트 2등신 치비 팝거너(시그니처: 어둠 속 횃불빛 받은 민트 히어로, STORY.md §8)
     function drawHero(ctx, w, h, t) {
       var bob = t ? -1 : 0, by = 7 + bob;
       pxShadow(ctx, w, h, 18, 34.5, 9, 2.4);
@@ -426,8 +426,38 @@
     { name: '핏빛 대왕',  tex: 'boss-king', anim: 'boss-king-idle', tint: BOSS_TINTS[3], hp: 250, patterns: ['ring', 'spiral', 'aimed3'] },
     { name: '허공안',     tex: 'boss-eye', anim: 'boss-eye-idle', tint: BOSS_TINTS[4], hp: 320, patterns: ['spiral', 'fan', 'ring'] },
     { name: '심판 봇',    tex: 'boss-bot', anim: 'boss-bot-idle', tint: BOSS_TINTS[5], hp: 400, patterns: ['fan', 'walls', 'spiral'] },
-    { name: '던전의 핵',  tex: 'boss-eye', anim: 'boss-eye-idle', tint: BOSS_TINTS[6], hp: 560, patterns: ['ring', 'spiral', 'fan', 'aimed3'] }
+    { name: '악몽의 핵',  tex: 'boss-eye', anim: 'boss-eye-idle', tint: BOSS_TINTS[6], hp: 560, patterns: ['ring', 'spiral', 'fan', 'aimed3'] }
   ];
+
+  // ===========================================================================
+  // 서사 텍스트 표면 (STORY.md §7 단일 진실과 1:1 미러 — 수정은 STORY.md 먼저)
+  //   따뜻한 경이 · Kishōtenketsu — 起 타이틀+1층 / 承 x1층 막간 / 転 91층+승리 1행 / 結 승리 2행+타이틀 별
+  // ===========================================================================
+  var STORY_TEXT = {
+    tagline: '혹성이 떨어진 밤, 별이는 말없이 사라졌다.',
+    titleBarks: [
+      '"구멍은 위험혀. 메워버려야 혀, 저런 건." — 이장님',
+      '"그 집 애, 혹성 떨어진 뒤로 안 보인다더라." — 잡화점 아주머니',
+      '"별은 길을 잃지 않아. 잠시 쉬어갈 뿐이지." — 별지기 할아버지',
+      '"뒷산에서 빛이 났대! 진짜래!" — 떠버리 쌍둥이'
+    ],
+    traces: {
+      1: '둘이 만든 팝총을 꼭 쥐고, 호두는 구멍 아래로 첫걸음을 디뎠다.',
+      11: '바닥에 별이의 반창고가 떨어져 있다 — 한 장이 아니라 한 통째로.',
+      21: '발자국이 흐트러짐 없이 곧다 — 도망친 아이의 걸음이 아니다.',
+      31: '모퉁이마다 별이의 손수건이 길 표시처럼 묶여 있다.',
+      41: '별이가 그린 별 지도 조각 — 잉크가 마른 지 오래다.',
+      51: '수첩 한 장: "얘가 아파. 소리가 점점 작아져."',
+      61: '악몽 조각들은 쫓아오는 게 아니라, 아파서 우는 것 같다.',
+      71: '횃불이 이미 켜져 있다 — 길을 밝혀 둔 누군가의 손길.',
+      81: '발자국이 뛰기 시작한다 — 도망이 아니라 서두름이다.',
+      91: '수첩 마지막 장: "호두야, 올 줄 알았어. 깊은 데서 기다릴게."'
+    },
+    clearBarks: ['조각이 별빛으로 돌아갔다', '방이 조용해졌다', '팡! 깨끗해졌다', '별빛 한 줌이 떠올랐다', '조금만 더 깊이'],
+    win1: '가장 깊은 곳, 별이는 별의 심장을 감싸고 있었다 — "왔구나. 도와줘, 얘가 아파."',
+    win2: '되살아난 별은 두 아이를 안고 밤하늘로 돌아갔다.',
+    lose: '어둠이 닿기 전, 따뜻한 별빛이 호두를 감싸 구멍 입구로 되돌려놓았다.'
+  };
 
   // ===========================================================================
   // BootScene — 아트 베이크, 씬 등록, DOM 가드
@@ -459,6 +489,14 @@
         g.fillStyle(ec, 0.08 + (i % 4) * 0.03);
         g.fillRect(Math.random() * W, Math.random() * H, 2, 2);
       }
+      // 밤하늘 — 클리어 횟수만큼 별이 하나씩 늘어난다 (STORY.md §7 E2: 結의 메타 회수)
+      var starN = Math.min(META.wins, 20);
+      for (var s = 0; s < starN; s++) {
+        var sx = ((s * 173 + 41) % (W - 60)) + 30;
+        var sy = ((s * 97 + 23) % Math.floor(H * 0.14)) + 26;
+        g.fillStyle(rampInt('gold', 3), 0.95); g.fillRect(sx - 1, sy, 3, 1); g.fillRect(sx, sy - 1, 1, 3);
+        g.fillStyle(WHITE_INT, 1); g.fillRect(sx, sy, 1, 1);
+      }
       // 벽 횃불 + 마스코트(시그니처 구도: 어둠 속 횃불빛 받은 민트 히어로)
       var t1 = this.add.sprite(cx - 120, H * 0.33, 'wtorch', 0).setScale(2); t1.play('torch-burn');
       var t2 = this.add.sprite(cx + 120, H * 0.33, 'wtorch', 1).setScale(2); t2.play({ key: 'torch-burn', startFrame: 1 });
@@ -467,6 +505,9 @@
       // 타이틀
       this.add.text(cx, H * 0.5, '팡팡 던전', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '60px', color: ROLE.pickup }).setOrigin(0.5).setShadow(0, 4, ramp('gold', 0), 0, true, true);
       this.add.text(cx, H * 0.5 + 48, 'POP  DUNGEON', { fontFamily: 'monospace', fontSize: '20px', color: ROLE.ui_accent }).setOrigin(0.5);
+      // 서사 인트로 1/2 + 마을 주민 bark (STORY.md §7 T1·B1)
+      this.add.text(cx, H * 0.5 + 78, STORY_TEXT.tagline, { fontFamily: 'sans-serif', fontSize: '15px', color: ramp('steel', 3) }).setOrigin(0.5);
+      this.add.text(cx, H * 0.78, STORY_TEXT.titleBarks[Math.floor(Math.random() * STORY_TEXT.titleBarks.length)], { fontFamily: 'sans-serif', fontSize: '12px', color: ramp('steel', 2) }).setOrigin(0.5);
       // 직업 카드
       var cardY = H * 0.62;
       var card = this.add.graphics(); card.fillStyle(rampInt('steel', 0), 0.85); card.fillRect(cx - 150, cardY, 300, 70); card.lineStyle(2, RARITY_COLOR.rare, 0.7); card.strokeRect(cx - 150, cardY, 300, 70);
@@ -552,6 +593,8 @@
       // 배너 텍스트
       this.banner = this.add.text(DESIGN_W / 2, ARENA.y + 200, '', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '34px', color: WHITE }).setOrigin(0.5).setDepth(60).setAlpha(0).setShadow(0, 3, INK, 4);
       this.toast = this.add.text(DESIGN_W / 2, ARENA_B - 40, '', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '18px', color: ROLE.pickup }).setOrigin(0.5).setDepth(60).setAlpha(0);
+      // 막간 흔적 텍스트 (STORY.md §7 T2·T3 — 배너 아래 한 줄)
+      this.trace = this.add.text(DESIGN_W / 2, ARENA.y + 252, '', { fontFamily: 'sans-serif', fontSize: '15px', color: ramp('steel', 3), align: 'center', wordWrap: { width: ARENA.w - 56 } }).setOrigin(0.5).setDepth(60).setAlpha(0).setShadow(0, 2, INK, 3);
 
       this.state = 'play'; // play | clearing | transition | dead | win
       this.floorEnemiesLeft = 0; this.waveQueue = [];
@@ -635,6 +678,8 @@
         this.buildWaves(n);
         this.time.delayedCall(450, function () { self.spawnNextWave(); self.state = 'play'; });
       }
+      // 별이의 흔적 막간 (STORY.md §5 承·転 — x1층 진입마다 1문장)
+      if (STORY_TEXT.traces[n]) this.traceShow(STORY_TEXT.traces[n]);
     },
 
     buildWaves: function (n) {
@@ -1248,7 +1293,7 @@
       var self = this;
       if (RUN.floor >= 100) { this.win(); return; }
       if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.2);
-      this.toastShow('클리어!', roleInt('ui_accent'));
+      this.toastShow(STORY_TEXT.clearBarks[Math.floor(Math.random() * STORY_TEXT.clearBarks.length)], roleInt('ui_accent'));
       // 포탈 생성(아레나 하단 중앙)
       this.time.delayedCall(500, function () {
         var px = DESIGN_W / 2, py = ARENA.y + ARENA.h * 0.5;
@@ -1321,6 +1366,12 @@
       this.toast.setText(txt).setColor('#' + (color || roleInt('pickup')).toString(16).padStart(6, '0')).setAlpha(1).setY(ARENA_B - 40);
       this.tweens.killTweensOf(this.toast);
       this.tweens.add({ targets: this.toast, y: ARENA_B - 70, alpha: 0, delay: 700, duration: 500 });
+    },
+    traceShow: function (txt) {
+      this.trace.setText(txt).setAlpha(0);
+      this.tweens.killTweensOf(this.trace);
+      this.tweens.add({ targets: this.trace, alpha: 1, delay: 650, duration: 400 });
+      this.tweens.add({ targets: this.trace, alpha: 0, delay: 4400, duration: 500 });
     }
   });
 
@@ -1474,11 +1525,22 @@
       var W = DESIGN_W, H = DESIGN_H, cx = W / 2;
       var win = data && data.win;
       this.cameras.main.setBackgroundColor(win ? FLOOR_BG[2] : FLOOR_BG[3]);
-      this.add.text(cx, H * 0.28, win ? '클리어!' : '게임 오버', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '52px', color: win ? ROLE.ui_accent : ramp('scarlet', 2) }).setOrigin(0.5).setShadow(0, 4, INK, 4);
-      if (win) this.add.text(cx, H * 0.28 + 50, '지하 100층 돌파! 팝거너의 전설', { fontFamily: 'sans-serif', fontSize: '16px', color: ROLE.pickup }).setOrigin(0.5);
+      this.add.text(cx, H * 0.28, win ? '별이 떠오른 밤' : '게임 오버', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: win ? '46px' : '52px', color: win ? ROLE.ui_accent : ramp('scarlet', 2) }).setOrigin(0.5).setShadow(0, 4, INK, 4);
+      // 승패 카드 (STORY.md §7 T4 転+結 / T5 별빛 송환)
+      if (win) {
+        this.add.text(cx, H * 0.28 + 44, STORY_TEXT.win1 + '\n' + STORY_TEXT.win2, { fontFamily: 'sans-serif', fontSize: '15px', color: ROLE.pickup, align: 'center', lineSpacing: 6, wordWrap: { width: 440 } }).setOrigin(0.5, 0);
+      } else {
+        this.add.text(cx, H * 0.28 + 44, STORY_TEXT.lose, { fontFamily: 'sans-serif', fontSize: '14px', color: ramp('steel', 3), align: 'center', wordWrap: { width: 420 } }).setOrigin(0.5, 0);
+      }
 
-      var hero = this.add.sprite(cx, H * 0.46, 'hero', 0).setScale(3); hero.play('hero-idle');
+      var hero = this.add.sprite(cx, win ? H * 0.50 : H * 0.46, 'hero', 0).setScale(3); hero.play('hero-idle');
       if (!win) hero.setTint(rampInt('steel', 2)).setAngle(180);
+      if (win) {
+        // 떠오르는 별 (STORY.md §7 거울쌍 — 떨어진 별이 돌아간다)
+        var star = this.add.text(cx, H * 0.50 - 56, '✦', { fontFamily: 'sans-serif', fontSize: '24px', color: ramp('gold', 2) }).setOrigin(0.5).setShadow(0, 2, INK, 4);
+        this.tweens.add({ targets: star, y: H * 0.50 - 88, duration: 2600, ease: 'Sine.out' });
+        this.tweens.add({ targets: star, alpha: 0.45, duration: 650, yoyo: true, repeat: -1 });
+      }
 
       var lines = [
         '도달: 지하 ' + (data ? data.floor : 1) + '층',

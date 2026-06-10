@@ -33,7 +33,7 @@
 |---|---|---|
 | `stone` | `#1b2030 #2a3349 #3f4f6b #5d7693` | 던전 아레나 바닥·브릭 격자·벽 — 무드의 바닥 |
 | `torch` | `#4a2210 #8a3d1c #d96a28 #ffa53a #ffe9a8` | **무드의 시그니처** — 벽 횃불·광 풀·포탑·상자 나무·볼터치·스킬2 버튼 |
-| `hero` | `#0f3f38 #188a72 #3fd6a8 #aef7dd` | 플레이어 '팡이'·아군 탄·기력(에너지)·닷지 버튼·잔상 |
+| `hero` | `#0f3f38 #188a72 #3fd6a8 #aef7dd` | 플레이어 '호두'(STORY.md §8)·아군 탄·기력(에너지)·닷지 버튼·잔상 |
 | `scarlet` | `#531222 #a02038 #e83a52 #ff8d7a` | **위험의 시그니처** — 적탄·하트·보스 HP바·보스 배너·게임오버 |
 | `gold` | `#7a4a12 #c98a1f #ffc63a #fff1b8` | 코인·별(아이템 드랍)·궁극기 탄·왕관·팝건·타이틀 |
 | `venom` | `#173a1c #2f7a2c #5cc23e #c2f57e` | 슬라임 적 + 슬라임 대왕(보스) + 바닥 이끼 점 |
@@ -105,7 +105,7 @@ data.js POP_STYLE ──emit──▶ style.json ──lint──▶ lint-style.
         │    · 층 배경·보스 틴트 → variants
         │    · 등급색 → POP_ITEMS.rarities (items 권위, §2 정합)
         ├─ ABILITIES.md §visual / ITEMS.md §visual → 아이콘 생성 시 palette.master.json 상속(D6)
-        └─ index.html: theme-color=#10131f(배경), favicon=도트 민트 팡이, image-rendering: pixelated
+        └─ index.html: theme-color=#10131f(배경), favicon=도트 민트 호두, image-rendering: pixelated
 ```
 
 - **의도적 예외(팔레트 밖):** 카메라 flash/fade 의 숫자 RGB(피격 플래시·골드 플래시·하강 페이드)는 순간 광
@@ -129,7 +129,7 @@ data.js POP_STYLE ──emit──▶ style.json ──lint──▶ lint-style.
     - info `palette-contrast: neutrals.black vs 배경 1.00` — 의도된 값: 잉크는 외곽선 용도(§2).
     - info `dead-token: 램프 8종 내부 미참조` — 의도된 구조: 램프 참조는 game.js `ramp()` 호출에서 일어난다.
     - `palette-size` 경고 없음 = 고유 색 ≤ 48 충족(45색). `medium-match`(D7) 경고 없음 = render 정합.
-  - **수동 검수(실행, chrome-devtools 스크린샷):** 타이틀(시그니처 구도: 횃불 2 + 민트 도트 팡이) / 8층 전투
+  - **수동 검수(실행, chrome-devtools 스크린샷):** 타이틀(시그니처 구도: 횃불 2 + 민트 도트 호두) / 8층 전투
     (스칼렛 탄막·아케인 오브·골드 픽업이 돌어둠 위에 또렷) / 10층 보스(왕관 슬라임 대왕 셀+디더, 스칼렛 보스바)
     모두 의도대로. 콘솔 에러 0. 헤드리스 스텝(`game.loop.step`)으로 층 점프 검증.
   - **한 세계로 보이나?** ✓ 한 매체(pixel)·한 광원(NW)·한 잉크(#15121f)·제한 램프 8종·셀 3단 — `STY-SCOPE-ONE-STYLE` 충족.
