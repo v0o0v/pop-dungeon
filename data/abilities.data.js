@@ -1,77 +1,386 @@
 /* ============================================================================
  * 팡팡 던전 — 스킬 / 능력 데이터 (ability-architect 계약 · lint-abilities.mjs)
  * ----------------------------------------------------------------------------
- * 직업 '팝거너(Pop Gunner)' 의 능력 킷. 자원=기력(energy).
- * 슬롯 예산: dodge · skill1 · skill2 · ult = 4 (모바일 버튼 예산 한도).
+ * 직업 '팝거너(Pop Gunner)' 의 능력 킷. 자원=기력(energy) + 별빛 게이지(starlight).
+ *
+ * 슬롯 모델(로드아웃):
+ *   고정  dodge  = 팡 구르기(시그니처 이동기, 항상 장착)
+ *   장착  skill1 · skill2 · ult = 배운 액티브 풀에서 자유 장착(loadout)
+ *   → 모바일 동시 바인딩 액티브 슬롯 = 4(버튼 예산 한도). 풀의 나머지 액티브는 slot:null
+ *     (배워두고 마을 별지기 할아버지에게서 슬롯에 끼움 = 서사 정합).
+ *
+ * 진행: 레벨업으로 스킬포인트 획득(progression.levelCurve) → tree 노드 학습(learn) →
+ *   액티브 해금 / 패시브 스탯 / 강화. 단일 직업이라 클래스 분기 없이 3계열(화력·기동·별빛)
+ *   특성 트리로 빌드를 가른다.
+ *
+ * 트리 계열 3 (화력 fire · 기동 mobi · 별빛 star) — root 에서 각 계열 게이트로 분기.
+ *   패시브 노드 effect 키는 game/stats.js(recomputeStats) 입력 계약을 따른다.
  *
  * 브라우저: window.POP_ABILITIES 전역. Node: module.exports.ABILITIES.
+ *   data/index.mjs 집계 진입점이 이 모듈을 import 해 emit-json.mjs 로 abilities.json 추출.
+ * 린트: node tools/emit-json.mjs &&
+ *   node D:/ClaudeCowork/JSGameEngineForCC/skills/wgf-ability-architect/tools/lint-abilities.mjs abilities.json
+ *   → tree 도달성·고아 0 · error/warn 0.
  * ==========================================================================*/
 (function (g) {
   'use strict';
 
   var ABILITIES = {
-    "version": 1,
+    "version": 2,
     "meta": {
       "slug": "pop-dungeon",
       "tier": 3,
       "class": "pop-gunner",
       "className": "팝거너",
-      "originalityNote": "전 능력 절차 설계 오리지널 — 어떤 게임의 고유 스킬명/수치도 인용하지 않음. 장르 관용 메카닉(닷지롤 무적·궁극기·자원/쿨다운)만 차용."
+      "loadoutSlots": ["skill1", "skill2", "ult"],
+      "fixedSlots": ["dodge"],
+      "families": [
+        { "id": "fire", "name": "화력", "tag": "firepower", "color": "torch",
+          "fantasy": "둘이 만든 팝총의 화력 — 쏘기=정화. 둘러싼 어둠을 한 번에 걷어낸다." },
+        { "id": "mobi", "name": "기동", "tag": "mobility", "color": "hero",
+          "fantasy": "호두의 발 — 더 깊이, 더 빠르게 내려간다. 닷지롤이 곧 호두의 성격." },
+        { "id": "star", "name": "별빛", "tag": "starlight", "color": "arcane",
+          "fantasy": "별이가 가르쳐 준 빛 — 지키고, 정화하고, 되돌린다. 별의 심장에서 온 힘." }
+      ],
+      "originalityNote": "전 능력 절차 설계 오리지널 — 어떤 상용 게임의 고유 스킬명/외형/수치도 인용하지 않음. 장르 관용 메카닉(닷지롤 무적·궁극기·자원/쿨다운·스킬트리)만 차용. 고유명(팝거너·기력·별빛·악몽 조각)은 STORY.md Glossary 정합."
     },
+
     "resources": [
-      { "id": "energy", "name": "기력", "max": 100, "start": 100, "startFull": true, "regen": 9, "rechargeDelay": 1.0 }
+      { "id": "energy", "name": "기력", "max": 100, "start": 100, "startFull": true, "regen": 9, "rechargeDelay": 1.0,
+        "flavor": "팝총을 굴리는 호두의 숨. 액티브 스킬의 주 연료." },
+      { "id": "starlight", "name": "별빛", "max": 100, "start": 0, "startFull": false, "regen": 0, "rechargeDelay": 0,
+        "flavor": "악몽 조각을 정화할 때 모이는 별의 빛. 처치로 충전(런타임 onKill), 궁극기·별빛 지원기로 소비. 리젠 없음 = 모아서 쓰는 자원." }
     ],
+
     "abilities": [
+      /* ── 이동기(고정 슬롯) ───────────────────────────────────────────────── */
       {
         "id": "dodge_roll", "name": "팡 구르기", "kind": "movement", "input": "instant",
         "slot": "dodge", "cooldown": 1.05, "charges": 2,
         "effect": { "iframes": 0.36, "dashDistance": 150, "dashSpeed": 560 },
         "role": "mobility", "tags": ["mobility", "dodge"], "grantsVerb": "dodge", "budget": 8,
-        "flavor": "전반 무적프레임으로 탄막을 통째로 통과한다. 엔터더건전식 닷지롤.",
-        "visual": { "silhouette": "통통한 잔상이 도넛처럼 번지는 원형 롤", "material": "반투명 청록 모션블러+흰 림", "palette": "#5ef0d6/#2fd0bc/#ffffff", "focal_motif": "굴러가는 잔상 3겹" }
+        "flavor": "전반 무적프레임으로 탄막을 통째로 통과한다. 호두의 시그니처 회피 — 입력 즉시 잔상.",
+        "visual": { "silhouette": "통통한 잔상이 도넛처럼 번지는 원형 롤", "material": "반투명 청록 모션블러+흰 림", "palette": "hero.2/hero.3/white", "focal_motif": "굴러가는 잔상 3겹", "vfx_motif": "청록 퍼프 8입자", "lighting": "NW" }
       },
+
+      /* ── 화력계 액티브(loadout 풀) ──────────────────────────────────────── */
       {
         "id": "pop_nova", "name": "팡 노바", "kind": "active", "input": "instant",
-        "slot": "skill1", "resource": "energy", "cost": 35, "cooldown": 5,
+        "slot": null, "resource": "energy", "cost": 35, "cooldown": 5,
         "effect": { "damage": 45, "radius": 150, "knockback": 260 },
-        "role": "burst", "tags": ["burst", "aoe"], "budget": 12,
+        "role": "burst", "tags": ["firepower", "aoe"], "budget": 12,
         "flavor": "주위로 팡! 하고 퍼지는 충격파. 탄막에 둘러싸였을 때 탈출구를 연다.",
-        "visual": { "silhouette": "사방으로 퍼지는 링 충격파", "material": "노랑→주황 글로우 링", "palette": "#fff3a0/#ffb13a/#ff7a3a", "focal_motif": "확장하는 이중 링" }
+        "visual": { "silhouette": "사방으로 퍼지는 링 충격파", "material": "노랑→주황 글로우 링", "palette": "gold.3/torch.3/torch.2", "focal_motif": "확장하는 이중 링", "vfx_motif": "즉발 확장 링 + 셰이크 0.008", "lighting": "NW" }
+      },
+      {
+        "id": "scatter_burst", "name": "산탄 팡", "kind": "active", "input": "aim",
+        "slot": null, "resource": "energy", "cost": 22, "cooldown": 3.5,
+        "effect": { "damage": 16, "pellets": 7, "coneAngle": 50, "range": 230 },
+        "role": "burst", "tags": ["firepower", "spread"], "budget": 11,
+        "flavor": "조준 방향으로 7발을 부채꼴로 뿜는다. 근거리에서 한 적에게 전탄 명중 = 폭딜, 멀면 광역.",
+        "visual": { "silhouette": "부채꼴로 퍼지는 7개 탄알", "material": "주황 스파크 펠릿", "palette": "torch.3/torch.2/gold.3", "focal_motif": "부채꼴 펠릿 7", "vfx_motif": "총구 콘 플래시", "lighting": "NW" }
+      },
+      {
+        "id": "charge_shot", "name": "응축 팡", "kind": "active", "input": "charge",
+        "slot": null, "resource": "energy", "cost": 30, "cooldown": 6,
+        "cast": 0.7, "active": 0.1, "recovery": 0.25,
+        "effect": { "damage": 90, "pierce": 4, "width": 18, "range": 520 }, "maxStacks": 1,
+        "role": "burst", "tags": ["firepower", "pierce"], "budget": 14,
+        "flavor": "팝총을 0.7초 응축해 일직선 관통탄을 쏜다. 일렬로 선 적·보스 약점에 한 방.",
+        "visual": { "silhouette": "굵은 직선 관통 빔탄", "material": "응축된 백금 코어 + 잔열", "palette": "gold.3/gold.2/white", "focal_motif": "관통하는 굵은 직선", "vfx_motif": "차지 링 수축 → 발사 섬광", "telegraph_read": "발사 직전 총구 백금 응축광", "lighting": "NW" }
       },
       {
         "id": "turbo_pop", "name": "터보 팝", "kind": "active", "input": "instant",
-        "slot": "skill2", "resource": "energy", "cost": 30, "cooldown": 8,
+        "slot": null, "resource": "energy", "cost": 30, "cooldown": 8,
         "effect": { "duration": 4, "fireRateMult": 1.8 }, "maxStacks": 1,
-        "role": "sustain", "tags": ["firepower"], "budget": 12,
-        "flavor": "잠깐 발사 속도가 폭발한다. 보스 페이즈 전환 직후 화력 집중.",
-        "visual": { "silhouette": "총구 주위 회전 가속 링", "material": "청록 스파크 트레일", "palette": "#6ff0ff/#2fd0bc/#ffffff", "focal_motif": "가속 회오리" }
+        "role": "sustain", "tags": ["firepower", "buff"], "budget": 12,
+        "flavor": "잠깐 발사 속도가 폭발한다. 보스 페이즈 전환 직후 화력 집중 윈도.",
+        "visual": { "silhouette": "총구 주위 회전 가속 링", "material": "청록 스파크 트레일", "palette": "hero.2/hero.3/white", "focal_motif": "가속 회오리", "vfx_motif": "발사 잔상 가속", "lighting": "NW" }
       },
+
+      /* ── 기동계 액티브(loadout 풀) ──────────────────────────────────────── */
+      {
+        "id": "blink_pop", "name": "팡 점멸", "kind": "active", "input": "aim",
+        "slot": null, "resource": "energy", "cost": 28, "cooldown": 7,
+        "effect": { "blinkDistance": 220, "iframes": 0.18, "puffDamage": 24, "puffRadius": 70 },
+        "role": "mobility", "tags": ["mobility", "blink"], "grantsVerb": "blink", "budget": 12,
+        "flavor": "조준 방향으로 순간이동하며, 떠난 자리에 팡! 폭발 잔향을 남긴다. 끼인 데서 빠져나오며 역습.",
+        "visual": { "silhouette": "사라지는 점 + 도착점 별 글린트", "material": "청록 파편이 모였다 흩어짐", "palette": "hero.3/arcane.2/white", "focal_motif": "두 점을 잇는 잔광", "vfx_motif": "출발점 잔향 폭발 + 도착 글린트", "lighting": "NW" }
+      },
+      {
+        "id": "comet_dash", "name": "혜성 돌진", "kind": "active", "input": "aim",
+        "slot": null, "resource": "energy", "cost": 26, "cooldown": 5.5,
+        "effect": { "dashDistance": 300, "dashSpeed": 720, "trailDamage": 30, "trailWidth": 40, "iframes": 0.28 },
+        "role": "mobility", "tags": ["mobility", "dash"], "grantsVerb": "comet", "budget": 13,
+        "flavor": "혜성처럼 길게 돌진하며 지나는 길의 적을 들이받는다. 이동 + 화력 + 회피의 삼중주.",
+        "visual": { "silhouette": "긴 꼬리를 단 돌진 궤적", "material": "청록→흰 혜성 꼬리", "palette": "hero.3/hero.2/white", "focal_motif": "길게 끄는 혜성 꼬리", "vfx_motif": "잔상 5겹 + 충돌 스파크", "lighting": "NW" }
+      },
+
+      /* ── 별빛계 액티브(loadout 풀) — 지원·생존·정화 ────────────────────── */
+      {
+        "id": "star_ward", "name": "별빛 보호막", "kind": "active", "input": "instant",
+        "slot": null, "resource": "energy", "cost": 34, "cooldown": 12,
+        "effect": { "shield": 60, "duration": 5, "reflectChance": 0.25 }, "maxStacks": 1,
+        "role": "survival", "tags": ["starlight", "shield"], "budget": 13,
+        "flavor": "별이가 가르쳐 준 빛으로 잠시 막을 두른다. 피해를 흡수하고 일부 탄을 되쏜다.",
+        "visual": { "silhouette": "플레이어를 감싸는 육각 별빛 막", "material": "반투명 보라+금 글로우 셸", "palette": "arcane.2/gold.2/white", "focal_motif": "감싸는 육각 배리어", "vfx_motif": "전개 시 별가루 폐쇄 링", "lighting": "NW" }
+      },
+      {
+        "id": "purify_pulse", "name": "정화의 파동", "kind": "active", "input": "instant",
+        "slot": null, "resource": "starlight", "cost": 40, "cooldown": 14,
+        "effect": { "heal": 1, "cleanseRadius": 200, "slow": 0.45, "slowDuration": 3 },
+        "role": "control", "tags": ["starlight", "cleanse"], "budget": 13,
+        "flavor": "모은 별빛을 터뜨려 주위 적탄을 정화하고, 악몽 조각을 느리게 하며, 호두를 한 칸 치유한다. 별빛 자원 소비.",
+        "visual": { "silhouette": "잔잔히 퍼지는 정화 물결", "material": "보라+청록 정화광 파문", "palette": "arcane.2/hero.3/white", "focal_motif": "퍼지는 별빛 파문", "vfx_motif": "적탄 → 별빛 입자 소멸 + 치유 글로우", "lighting": "NW" }
+      },
+
+      /* ── 궁극기(ult 슬롯 풀) — 별빛 자원 100 소비 ─────────────────────── */
       {
         "id": "golden_storm", "name": "황금 팝 폭풍", "kind": "ultimate", "input": "instant",
-        "slot": "ult", "resource": "energy", "cost": 100, "cooldown": 30,
-        "effect": { "damage": 30, "duration": 5, "orbitalCount": 8 },
-        "role": "burst", "tags": ["ultimate", "aoe"], "budget": 30,
-        "flavor": "황금 탄알 8발이 나를 돌며 닿는 모든 적을 분쇄한다. 위기 탈출 + 청소기.",
-        "visual": { "silhouette": "플레이어를 도는 8개 오비탈 탄", "material": "금빛 글로우 구체", "palette": "#fff6c0/#ffcf3a/#d98a1f", "focal_motif": "회전하는 황금 고리" }
+        "slot": null, "resource": "starlight", "cost": 100, "cooldown": 30,
+        "effect": { "damage": 30, "duration": 5, "orbitalCount": 8, "radius": 70 },
+        "role": "burst", "tags": ["firepower", "ultimate", "aoe"], "budget": 30,
+        "flavor": "황금 탄알 8발이 나를 돌며 닿는 모든 적을 분쇄한다. 위기 탈출 + 청소기 — 근접 회전 압박형 궁극기.",
+        "visual": { "silhouette": "플레이어를 도는 8개 오비탈 탄", "material": "금빛 글로우 구체", "palette": "gold.3/gold.2/torch.2", "focal_motif": "회전하는 황금 고리", "vfx_motif": "발동 화면 플래시 + 회전 오비탈", "rarity_visual": "금빛 궁극 테두리 글로우", "lighting": "NW" }
       },
       {
+        "id": "starfall", "name": "별똥 소나기", "kind": "ultimate", "input": "aim",
+        "slot": null, "resource": "starlight", "cost": 100, "cooldown": 28,
+        "effect": { "damage": 22, "meteors": 14, "areaRadius": 260, "duration": 3.5, "meteorRadius": 46 },
+        "role": "burst", "tags": ["starlight", "ultimate", "aoe"], "budget": 30,
+        "flavor": "조준한 넓은 구역에 별똥 14발이 쏟아져 내린다. 원거리 광역 폭격형 궁극기 — 황금 폭풍의 대척점.",
+        "visual": { "silhouette": "하늘에서 떨어지는 다수 별똥 줄기", "material": "보라→흰 낙하 유성 + 착탄 별폭발", "palette": "arcane.2/arcane.3/white", "focal_motif": "쏟아지는 별똥 다발", "vfx_motif": "지정 구역 표적 링 → 순차 착탄 별폭발", "telegraph_read": "착탄 직전 바닥 표적 원", "rarity_visual": "보라빛 궁극 테두리 글로우", "lighting": "NW" }
+      },
+
+      /* ── 패시브(트리 grants — 코어 2 + 트리 해금 4) ─────────────────────── */
+      {
         "id": "pop_mastery", "name": "팝건 숙련", "kind": "passive", "input": "passive",
-        "effect": { "flatDamage": 2 },
+        "slot": null, "effect": { "damage": 2 },
         "role": "core", "tags": ["firepower"], "budget": 6,
-        "flavor": "팝건을 오래 다뤄 기본 화력이 단단하다.",
-        "visual": { "silhouette": "총열에 새겨진 별 마크", "material": "에나멜 도트", "palette": "#ffd34a/#ffffff", "focal_motif": "작은 별 1개" }
+        "flavor": "팝건을 오래 다뤄 기본 화력이 단단하다. (코어 — 처음부터 보유)",
+        "visual": { "silhouette": "총열에 새겨진 별 마크", "material": "에나멜 도트", "palette": "gold.2/white", "focal_motif": "작은 별 1개", "lighting": "NW" }
       },
       {
         "id": "eagle_eye", "name": "매의 눈", "kind": "passive", "input": "passive",
-        "effect": { "critChance": 0.1, "critBonusDamage": 6 },
+        "slot": null, "effect": { "critChance": 0.1, "critBonusDamage": 6 },
         "role": "core", "tags": ["crit"], "budget": 6,
-        "flavor": "10% 확률로 약점에 명중해 추가 피해.",
-        "visual": { "silhouette": "조준 십자선 위 작은 눈", "material": "라인아트 글로우", "palette": "#9cff7a/#ffffff", "focal_motif": "타깃 십자선" }
+        "flavor": "10% 확률로 약점에 명중해 추가 피해. (코어 — 처음부터 보유)",
+        "visual": { "silhouette": "조준 십자선 위 작은 눈", "material": "라인아트 글로우", "palette": "venom.3/white", "focal_motif": "타깃 십자선", "lighting": "NW" }
+      },
+      {
+        "id": "overpressure", "name": "과압 탄창", "kind": "passive", "input": "passive",
+        "slot": null, "effect": { "critBonusDamage": 10, "skillDamage": 8 },
+        "role": "payoff", "tags": ["firepower", "crit"], "budget": 9,
+        "flavor": "탄압을 한계까지 올려 크리티컬·스킬 피해를 키운다. 화력 빌드의 payoff.",
+        "visual": { "silhouette": "과열되어 김 오르는 탄창", "material": "달궈진 강철 + 붉은 잔열", "palette": "scarlet.2/torch.3/white", "focal_motif": "과열 탄창", "lighting": "NW" }
+      },
+      {
+        "id": "fleet_step", "name": "날랜 발놀림", "kind": "passive", "input": "passive",
+        "slot": null, "effect": { "moveSpeed": 18, "dodgeCharges": 1 },
+        "role": "mobility", "tags": ["mobility"], "budget": 9,
+        "flavor": "발이 가벼워져 더 빨리 달리고, 구르기를 한 번 더 비축한다. 기동 빌드의 코어 강화.",
+        "visual": { "silhouette": "잔상이 남는 빠른 발", "material": "청록 스피드라인", "palette": "hero.3/hero.2/white", "focal_motif": "스피드라인 발", "lighting": "NW" }
+      },
+      {
+        "id": "starlit_heart", "name": "별빛 심장", "kind": "passive", "input": "passive",
+        "slot": null, "effect": { "maxHpBonus": 1, "energyRegen": 3, "starlightOnKill": 4 },
+        "role": "payoff", "tags": ["starlight"], "budget": 10,
+        "flavor": "별의 온기가 호두 안에 깃든다. 체력·기력 회복·처치당 별빛 충전을 키워 별빛 빌드를 돌린다.",
+        "visual": { "silhouette": "가슴께에 빛나는 작은 별", "material": "보라+금 펄스 글로우", "palette": "arcane.2/gold.2/white", "focal_motif": "심장 자리의 별", "vfx_motif": "느린 맥동 글로우", "lighting": "NW" }
       }
     ],
+
+    /* ── 스킬트리: root + 3계열(화력 fire · 기동 mobi · 별빛 star) ───────────
+     * 각 노드: { id, name, family, cost, kind('unlock'|'passive'|'enhance'),
+     *           grants?[ability id...], effect?{ } 또는 desc, requires?[] }.
+     * 학습 규칙: AbilityKit.learn(nodeId) — points·선행(requires/edges) 충족 시 grants 해금.
+     * start='n_root' 는 처음부터 학습된 것으로 취급(루트). edges 가 선행 그래프.
+     * 노드 35개 (root 1 + 화력 12 + 기동 11 + 별빛 11) — '계열당 10+ 일부 분기' 충족.
+     * ──────────────────────────────────────────────────────────────────────*/
+    "tree": {
+      "start": "n_root",
+      "nodes": [
+        { "id": "n_root", "name": "팝거너의 길", "family": "core", "cost": 0, "kind": "passive",
+          "desc": "호두가 구멍 아래에서 익히는 능력의 출발점. 세 갈래 — 화력·기동·별빛로 뻗는다." },
+
+        /* ===== 화력계(fire) — 12노드: 직선 줄기 + 2분기 ===== */
+        { "id": "fire_1", "name": "화력 입문", "family": "fire", "cost": 1, "kind": "passive",
+          "effect": { "damage": 3 }, "desc": "기본 피해 +3. 화력 줄기의 관문." },
+        { "id": "fire_2", "name": "팡 노바 해금", "family": "fire", "cost": 1, "kind": "unlock",
+          "grants": ["pop_nova"], "desc": "액티브 '팡 노바' 를 배운다(slot 장착 가능)." },
+        { "id": "fire_3", "name": "넓은 폭심", "family": "fire", "cost": 1, "kind": "enhance",
+          "effect": { "skillDamage": 6 }, "desc": "스킬 피해 +6 — 노바·산탄의 폭발을 키운다." },
+        { "id": "fire_4", "name": "산탄 팡 해금", "family": "fire", "cost": 1, "kind": "unlock",
+          "grants": ["scatter_burst"], "desc": "액티브 '산탄 팡' 을 배운다." },
+        { "id": "fire_5", "name": "연사 단련", "family": "fire", "cost": 1, "kind": "passive",
+          "effect": { "fireRateFlat": -0.03 }, "desc": "기본 발사 간격 -0.03s(연사 강화)." },
+        { "id": "fire_6", "name": "터보 팝 해금", "family": "fire", "cost": 1, "kind": "unlock",
+          "grants": ["turbo_pop"], "desc": "액티브 '터보 팝' 을 배운다." },
+        { "id": "fire_7", "name": "관통 탄심", "family": "fire", "cost": 2, "kind": "passive",
+          "effect": { "pierce": 1 }, "desc": "기본 탄 관통 +1." },
+        { "id": "fire_8", "name": "응축 팡 해금", "family": "fire", "cost": 2, "kind": "unlock",
+          "grants": ["charge_shot"], "desc": "액티브 '응축 팡'(차지 관통) 을 배운다." },
+        { "id": "fire_9", "name": "매의 눈 연마", "family": "fire", "cost": 2, "kind": "enhance",
+          "effect": { "critChance": 0.08 }, "desc": "크리티컬 확률 +8%." },
+        { "id": "fire_10", "name": "과압 탄창", "family": "fire", "cost": 2, "kind": "unlock",
+          "grants": ["overpressure"], "desc": "패시브 '과압 탄창'(크리·스킬 피해 payoff) 을 얻는다." },
+        { "id": "fire_11", "name": "이중 장전", "family": "fire", "cost": 3, "kind": "passive",
+          "effect": { "projectiles": 1, "spreadAngle": 8 }, "desc": "기본 발사 +1탄(약간의 퍼짐). 화력 캡스톤 갈래 A." },
+        { "id": "fire_12", "name": "황금 폭풍 해금", "family": "fire", "cost": 3, "kind": "unlock",
+          "grants": ["golden_storm"], "desc": "궁극기 '황금 팝 폭풍'(근접 회전형) 을 배운다. 화력 캡스톤 갈래 B." },
+
+        /* ===== 기동계(mobi) — 11노드: 줄기 + 1분기 ===== */
+        { "id": "mobi_1", "name": "기동 입문", "family": "mobi", "cost": 1, "kind": "passive",
+          "effect": { "moveSpeed": 10 }, "desc": "이동 속도 +10. 기동 줄기의 관문." },
+        { "id": "mobi_2", "name": "날랜 발놀림", "family": "mobi", "cost": 1, "kind": "unlock",
+          "grants": ["fleet_step"], "desc": "패시브 '날랜 발놀림'(이속·구르기 충전) 을 얻는다." },
+        { "id": "mobi_3", "name": "혜성 돌진 해금", "family": "mobi", "cost": 1, "kind": "unlock",
+          "grants": ["comet_dash"], "desc": "액티브 '혜성 돌진'(이동+화력 대시) 을 배운다." },
+        { "id": "mobi_4", "name": "구르기 연마", "family": "mobi", "cost": 1, "kind": "enhance",
+          "effect": { "dashDamage": 8 }, "desc": "구르며 들이받는 피해 +8(팡팡 부츠 시너지)." },
+        { "id": "mobi_5", "name": "질긴 가죽", "family": "mobi", "cost": 1, "kind": "passive",
+          "effect": { "armor": 2 }, "desc": "방어 +2 — 빠른 빌드의 생존 보강." },
+        { "id": "mobi_6", "name": "팡 점멸 해금", "family": "mobi", "cost": 2, "kind": "unlock",
+          "grants": ["blink_pop"], "desc": "액티브 '팡 점멸'(블링크+잔향 폭발) 을 배운다." },
+        { "id": "mobi_7", "name": "탄력 회복", "family": "mobi", "cost": 2, "kind": "passive",
+          "effect": { "energyRegen": 2 }, "desc": "기력 리젠 +2/s — 잦은 이동기 사용 지탱." },
+        { "id": "mobi_8", "name": "추진 가속", "family": "mobi", "cost": 2, "kind": "passive",
+          "effect": { "moveSpeed": 16 }, "desc": "이동 속도 +16(누적). 기동 줄기 강화." },
+        { "id": "mobi_9", "name": "회피 숙달", "family": "mobi", "cost": 2, "kind": "passive",
+          "effect": { "dodgeCharges": 1 }, "desc": "구르기 충전 +1(최대 보유 증가). 분기 갈래." },
+        { "id": "mobi_10", "name": "민첩 사격", "family": "mobi", "cost": 3, "kind": "passive",
+          "effect": { "fireRateFlat": -0.02, "moveSpeed": 8 }, "desc": "이동 사격 효율 — 연사·이속 동시 강화. 기동 캡스톤." },
+        { "id": "mobi_11", "name": "픽업 확장", "family": "mobi", "cost": 3, "kind": "passive",
+          "effect": { "pickupRadius": 30, "coinMult": 1.15 }, "desc": "획득 반경·코인 배율 증가(줍기 동사 강화). 분기 캡스톤." },
+
+        /* ===== 별빛계(star) — 11노드: 줄기 + 1분기 ===== */
+        { "id": "star_1", "name": "별빛 입문", "family": "star", "cost": 1, "kind": "passive",
+          "effect": { "starlightOnKill": 3 }, "desc": "처치당 별빛 충전 +3. 별빛 자원 루프의 관문." },
+        { "id": "star_2", "name": "별빛 심장", "family": "star", "cost": 1, "kind": "unlock",
+          "grants": ["starlit_heart"], "desc": "패시브 '별빛 심장'(체력·기력·별빛 payoff) 을 얻는다." },
+        { "id": "star_3", "name": "정화의 파동 해금", "family": "star", "cost": 1, "kind": "unlock",
+          "grants": ["purify_pulse"], "desc": "액티브 '정화의 파동'(정화+둔화+치유) 을 배운다." },
+        { "id": "star_4", "name": "별빛 효율", "family": "star", "cost": 1, "kind": "enhance",
+          "effect": { "skillDamage": 5 }, "desc": "스킬 피해 +5 — 별빛 액티브 강화." },
+        { "id": "star_5", "name": "별빛 보호막 해금", "family": "star", "cost": 2, "kind": "unlock",
+          "grants": ["star_ward"], "desc": "액티브 '별빛 보호막'(흡수+반사) 을 배운다." },
+        { "id": "star_6", "name": "따뜻한 빛", "family": "star", "cost": 2, "kind": "passive",
+          "effect": { "maxHpBonus": 1 }, "desc": "최대 체력 +1(별 하트 1칸)." },
+        { "id": "star_7", "name": "깊은 우물", "family": "star", "cost": 2, "kind": "passive",
+          "effect": { "energyMax": 25 }, "desc": "기력 최대치 +25 — 액티브를 더 자주." },
+        { "id": "star_8", "name": "맑은 정신", "family": "star", "cost": 2, "kind": "passive",
+          "effect": { "energyRegen": 3 }, "desc": "기력 리젠 +3/s. 분기 갈래." },
+        { "id": "star_9", "name": "충만한 별빛", "family": "star", "cost": 3, "kind": "passive",
+          "effect": { "starlightOnKill": 5 }, "desc": "처치당 별빛 +5(누적) — 궁극기 회전 가속. 별빛 캡스톤." },
+        { "id": "star_10", "name": "별똥 소나기 해금", "family": "star", "cost": 3, "kind": "unlock",
+          "grants": ["starfall"], "desc": "궁극기 '별똥 소나기'(원거리 광역) 을 배운다. 별빛 캡스톤 갈래." },
+        { "id": "star_11", "name": "수호의 가호", "family": "star", "cost": 3, "kind": "passive",
+          "effect": { "armor": 3, "skillDamage": 6 }, "desc": "방어·스킬 피해 동시 강화 — 별빛 탱킹 빌드 캡스톤." }
+      ],
+
+      /* edges: from→to(+선행). root 에서 각 계열 1번 노드로, 그 뒤 줄기·분기.
+       * 도달성 BFS 는 edges(또는 node.requires) 로 판정한다. 모든 노드가 진입 간선을 가진다. */
+      "edges": [
+        { "from": "n_root", "to": "fire_1" },
+        { "from": "n_root", "to": "mobi_1" },
+        { "from": "n_root", "to": "star_1" },
+
+        { "from": "fire_1", "to": "fire_2" },
+        { "from": "fire_2", "to": "fire_3" },
+        { "from": "fire_3", "to": "fire_4" },
+        { "from": "fire_4", "to": "fire_5" },
+        { "from": "fire_5", "to": "fire_6" },
+        { "from": "fire_6", "to": "fire_7" },
+        { "from": "fire_7", "to": "fire_8" },
+        { "from": "fire_8", "to": "fire_9" },
+        { "from": "fire_9", "to": "fire_10" },
+        { "from": "fire_10", "to": "fire_11" },
+        { "from": "fire_10", "to": "fire_12" },
+
+        { "from": "mobi_1", "to": "mobi_2" },
+        { "from": "mobi_2", "to": "mobi_3" },
+        { "from": "mobi_3", "to": "mobi_4" },
+        { "from": "mobi_4", "to": "mobi_5" },
+        { "from": "mobi_5", "to": "mobi_6" },
+        { "from": "mobi_6", "to": "mobi_7" },
+        { "from": "mobi_7", "to": "mobi_8" },
+        { "from": "mobi_8", "to": "mobi_9" },
+        { "from": "mobi_8", "to": "mobi_10" },
+        { "from": "mobi_9", "to": "mobi_11" },
+
+        { "from": "star_1", "to": "star_2" },
+        { "from": "star_2", "to": "star_3" },
+        { "from": "star_3", "to": "star_4" },
+        { "from": "star_4", "to": "star_5" },
+        { "from": "star_5", "to": "star_6" },
+        { "from": "star_6", "to": "star_7" },
+        { "from": "star_7", "to": "star_8" },
+        { "from": "star_8", "to": "star_9" },
+        { "from": "star_9", "to": "star_10" },
+        { "from": "star_8", "to": "star_11" }
+      ]
+    },
+
+    /* ── 진행: 레벨·경험치 곡선 + 스킬포인트 ─────────────────────────────────
+     * 레벨업으로 skillPoint 획득 → 마을 별지기 할아버지가 배분(learn). 서사: 별지기가
+     * 잊혀가던 별의 길(트리)을 다음 세대에게 전한다. tree 총 비용 = 65포인트(전 노드),
+     * 곡선은 50렙까지 약 60포인트 획득 → 풀 트리 직전(의미 있는 선택 강제). */
+    "progression": {
+      "maxLevel": 50,
+      "xpCurve": { "base": 40, "growth": 1.18, "formula": "xpToNext(L) = round(base * growth^(L-1))" },
+      "skillPointPerLevel": 1,
+      "bonusPointLevels": [10, 20, 30, 40, 50],
+      "respec": { "available": true, "where": "village_star_keeper", "cost": "gold", "note": "별지기 할아버지에게서 트리 리셋(빌드 실험 허용)." },
+      "totalTreeCost": 65
+    },
+
+    /* ── 세트 시너지(enabler/payoff 빌드) ───────────────────────────────────
+     * 능력 태그/아이템 교차로 발동하는 빌드 시너지. lint synergy 룰: 각 세트 member 가
+     * 실제 abilities 에 존재해야 도달 가능. enabler/payoff role 은 공유 태그 동료(≥2) 필요. */
+    "sets": [
+      { "id": "firepower", "name": "정화의 화력", "threshold": 2,
+        "members": ["pop_nova", "scatter_burst", "turbo_pop", "charge_shot", "overpressure", "golden_storm"],
+        "bonus": "화력 태그 2+ 장착/학습 시: 스킬 피해 +10%(빌드 정체성 보너스, 런타임 적용).",
+        "note": "enabler=터보 팝(fireRate↑)·payoff=과압 탄창(crit·skill↑). 둘 다 firepower 태그 공유." },
+      { "id": "mobility", "name": "호두의 발걸음", "threshold": 2,
+        "members": ["dodge_roll", "blink_pop", "comet_dash", "fleet_step"],
+        "bonus": "기동 태그 2+ 시: 이동 중 짧은 피해 감소(런타임 적용).",
+        "note": "이동기 다수 빌드 — 닷지·점멸·돌진 회전." },
+      { "id": "starlight", "name": "별의 가호", "threshold": 2,
+        "members": ["star_ward", "purify_pulse", "starlit_heart", "starfall"],
+        "bonus": "별빛 태그 2+ 시: 별빛 충전 속도 +15%(런타임 적용).",
+        "note": "enabler=별빛 심장(starlight 충전·생존)·payoff=별똥 소나기/정화. starlight 태그 공유." }
+    ],
+
+    /* ── 시너지/콤보 비런타임 메모(설계 의도 — lint 는 데이터로 검증) ──────── */
+    "synergyNotes": [
+      "enabler→payoff(화력): 터보 팝(fireRate↑) 켠 윈도에 과압 탄창·매의 눈으로 크리 폭딜. 곱연산은 turbo 한 종(maxStacks:1)으로 격리.",
+      "enabler→payoff(별빛): 처치로 별빛 충전(starlit_heart/star_1/star_9) → 정화·궁극기 회전. 별빛은 리젠 0이라 처치 루프가 곧 자원.",
+      "이동→화력 콤보: 혜성 돌진/팡 점멸로 진입 → 산탄 팡 근접 전탄 명중 = 폭딜. 캔슬/콤보 윈도는 런타임이 입력 버퍼로 처리.",
+      "궁극 선택: 황금 폭풍=근접 회전 압박 / 별똥 소나기=원거리 광역. 같은 ult 슬롯·자원(별빛100)이라 둘 중 빌드에 맞춰 장착(상호 비지배 — 거리·역할 분리)."
+    ],
+
+    /* ── 밸런스 설정(lint 임계값 입력) ──────────────────────────────────────
+     * powerKinds: 죽은스킬/지배/쿨다운 검사 대상. multCap: 동시 패시브 곱산 소스 한도.
+     * lowerIsBetter·statWeights 로 파워 점수·지배 판정 보정. */
     "balanceConfig": {
       "inputBudgetMobile": 4,
-      "multCap": 2
+      "multCap": 2,
+      "kinds": ["active", "passive", "movement", "utility", "ultimate", "reaction"],
+      "roles": ["core", "payoff", "enabler", "mobility", "survival", "control", "burst", "sustain", "utility"],
+      "inputs": ["instant", "charge", "toggle", "hold", "aim", "target", "passive"],
+      "powerKinds": ["active", "ultimate", "reaction"],
+      "deadSkillFactor": 0.4,
+      "cooldownCostScale": 3,
+      "spamCooldownMax": 1.5,
+      "statWeights": {
+        "iframes": 30, "dashDistance": 0.05, "dashSpeed": 0.01, "blinkDistance": 0.04,
+        "radius": 0.1, "cleanseRadius": 0.05, "areaRadius": 0.05, "range": 0.02,
+        "knockback": 0.02, "duration": 2, "orbitalCount": 4, "meteors": 2, "pellets": 3,
+        "shield": 0.4, "heal": 6, "slow": 10, "reflectChance": 12, "trailDamage": 0.6,
+        "pierce": 4, "width": 0.3, "trailWidth": 0.1, "puffDamage": 0.5, "puffRadius": 0.05,
+        "meteorRadius": 0.05, "slowDuration": 2, "coneAngle": 0.1, "fireRateMult": 1, "starlightOnKill": 1
+      }
     }
   };
 
