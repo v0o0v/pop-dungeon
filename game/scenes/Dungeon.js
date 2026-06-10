@@ -145,6 +145,13 @@
       // 층 진입 막간 텍스트(STORY — x1층 진입마다 1회. story.flags.seen_floor_NN 영속)
       this.maybeFloorIntro(RUN.floor);
 
+      // ── 바이옴 → BGM 라우팅(AUDIO.md §4 — 사운드 lane 핸드오프) ───────────────────
+      //   지역 입장 시 탐험 트랙(explore_cold/warm/mystic) 선택. enterRoom 이 전투/보스로
+      //   수평 리시퀀싱(setSection)·수직 레이어(setIntensity)를 덮어쓴다.
+      this.exploreTrack = this.biomeTrack(RUN.region || 1);
+      if (GAME_AUDIO.setSection) GAME_AUDIO.setSection(this.exploreTrack);
+      if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.3);  // 탐험 베드
+
       // 네이티브 백버튼 = 일시정지 등록(native.js 계약)
       PD.SCENES = PD.SCENES || {}; PD.SCENES.DUNGEON = 'Dungeon';
       PD.onBackPause = function () { self.togglePause(); };
@@ -166,6 +173,18 @@
       var floor = this.findFloorData(RUN);
       if (!floor) floor = this.sampleFloor();
       return PD.RoomGraph.build(floor);
+    },
+
+    // ── 바이옴 → 탐험 트랙 그룹(AUDIO.md §4 — world.json region.id 온도 매핑) ─────────
+    //   cold: region 01·03·07·09 / warm: 02·05·08·10 / mystic: 04·06.
+    //   region 은 order(1~10) 또는 'region-NN' 문자열 모두 허용.
+    biomeTrack: function (region) {
+      var n = region;
+      if (typeof region === 'string') { var m = region.match(/(\d+)/); n = m ? parseInt(m[1], 10) : 1; }
+      n = n || 1;
+      if (n === 4 || n === 6) return 'explore_mystic';
+      if (n === 2 || n === 5 || n === 8 || n === 10) return 'explore_warm';
+      return 'explore_cold';   // 1·3·7·9 (및 폴백)
     },
 
     // Phase 3 floors 데이터에서 현재 floor(1~100)의 층을 탐색(데이터 있으면 사용).
@@ -229,7 +248,7 @@
         cam.zoomTo ? cam.zoomTo(1, 180, 'Sine.easeOut', true) : null;
         cam.setZoom(0.96);
         this.tweens.add({ targets: cam, zoom: 1, duration: 180, ease: 'Sine.out' });
-        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('descend');
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('transition');   // (사운드 §3) 방 전환 부드러운 휘이
       }
     },
 
@@ -305,21 +324,26 @@
         // (L6b) 전투 방 첫 입실 — 적 1회 스폰 + 인접 문 잠금
         room.spawned = true; room.enemiesLeft = 0;
         if (isBoss) {
-          if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('boss');
-          if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(1);
+          // (사운드 §4) 100층 악몽의 핵 = finalboss 트랙, 그 외 지역 보스 = boss 트랙
+          var bossTrack = ((RUN.floor || 10) >= 100) ? 'finalboss' : 'boss';
+          if (GAME_AUDIO.setSection) GAME_AUDIO.setSection(bossTrack);
+          if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(1);   // 보스 전 레이어 만개
           if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('bossWarn');
           this.bannerShow('보스 — ' + (BOSS_TABLE[Phaser.Math.Clamp(Math.floor((RUN.floor||10)/10)-1,0,BOSS_TABLE.length-1)].name), rampInt('scarlet', 3));
           this.time.delayedCall(700, function () { if (self.room === room) self.spawnBoss(RUN.floor, room); });
         } else {
           if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('combat');
-          if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.45);
+          if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.55);  // 전투 진입(0.45~0.7)
           this.spawnRoomEnemies(room, RUN.floor);
           this.bannerShow(room.id + ' — 적 ' + room.enemiesLeft, roleInt('enemy'));
         }
         this.lockDoors(room, true);   // 미클리어 전투 방 — 인접 문 잠금
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('doorLock');   // (사운드 §3) 문 잠금 철컥
       } else if (room.cleared || !hasSpawns) {
-        // 안전 방(시작/보물/비밀/상점/휴식) 또는 이미 클리어한 방 — 문 열림 유지, 재스폰 없음
-        if (!hasSpawns && GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.25);
+        // 안전 방(시작/보물/비밀/상점/휴식) 또는 이미 클리어한 방 — 문 열림 유지, 재스폰 없음.
+        // (사운드 §4) 전투 밖으로 나오면 탐험 트랙으로 복귀 + 인텐시티 하강(여운/조용).
+        if (GAME_AUDIO.setSection && this.exploreTrack) GAME_AUDIO.setSection(this.exploreTrack);
+        if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(room.cleared ? 0.2 : 0.3);
         this.lockDoors(room, false);
         // (L6c) 특수방 기믹 디스패치(첫 입실 1회)
         this.enterSpecialRoom(room);
@@ -370,7 +394,7 @@
       // 첫 보물칸은 확정 장비, 나머지는 코인(과보상 방지)
       this.spawnItemDrop(pts[0].x, pts[0].y);
       for (var i = 1; i < pts.length; i++) this.spawnPickup('coin', pts[i].x, pts[i].y);
-      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('powerup');
+      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('treasure');   // (사운드 §3) 보물 개봉 반짝
       this.cameras.main.flash(120, 255, 220, 120);
     },
 
@@ -386,7 +410,7 @@
       // 보상: 코인 + 낮은 확률 아이템
       for (var i = 0; i < 4; i++) this.spawnPickup('coin', cx + (rand() - 0.5) * 40, cy + (rand() - 0.5) * 40);
       if (rand() < 0.5) this.spawnItemDrop(cx, cy);
-      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('coin');
+      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('secret');   // (사운드 §3) 비밀방 발견 — 별이 흔적
     },
 
     // 던전 상점방: 'T' 마커마다 구매대 픽업(닿으면 골드 차감 후 런 아이템 획득)
@@ -684,25 +708,41 @@
     },
 
     // ── 능력 효과 dispatch(Game.js 동일) ────────────────────────────────────────
+    // 능력 → 변별 SFX 키(AUDIO.md §3 — 사운드 lane 데이터 준비, 배선은 본 lane).
+    //   능력 데이터에 ab.sfx 가 있으면 그게 단일 진실, 없으면 id 매핑, 그 외 'skill' 폴백.
+    abilitySfx: function (ab) {
+      if (ab && ab.sfx) return ab.sfx;
+      var map = {
+        pop_nova: 'nova', turbo_pop: 'turbo', golden_storm: 'ultGolden', dodge_roll: 'dodge',
+        scatter_burst: 'scatter', charge_shot: 'charge', comet_dash: 'comet', blink_pop: 'blink',
+        star_ward: 'ward', purify_pulse: 'purify', starfall: 'ultStar'
+      };
+      return (ab && map[ab.id]) || 'skill';
+    },
+
     onAbility: function (ab, ctx) {
       var RUN = PD.RUN;
       var p = this.player;
+      var key = this.abilitySfx(ab);
       if (ab.id === 'pop_nova') {
         var e = ab.effect, dmg = e.damage + RUN.stats.skillDamage;
         this.novaBlast(p.x, p.y, e.radius, dmg, e.knockback);
-        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('nova');
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx(key);
         this.cameras.main.shake(220, 0.008);
       } else if (ab.id === 'turbo_pop') {
         p.turboT = ab.effect.duration;
-        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('skill');
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx(key);
         this.toastShow('터보 팝!');
       } else if (ab.id === 'golden_storm') {
         p.ultT = ab.effect.duration; p.ultAngle = 0; p.ultDamage = ab.effect.damage + RUN.stats.skillDamage; p.ultCount = ab.effect.orbitalCount;
-        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('skill');
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx(key);
         this.toastShow('황금 팝 폭풍!');
         this.cameras.main.flash(160, 255, 230, 120);
       } else if (ab.id === 'dodge_roll') {
         /* 효과는 tryDodge 에서 직접 처리 */
+      } else {
+        // 그 외(로드아웃으로 장착된 임의 액티브) — 변별 SFX만 재생(효과 미배선이면 무해)
+        if (GAME_AUDIO.sfx) GAME_AUDIO.sfx(key);
       }
     },
 
@@ -1133,8 +1173,10 @@
       PD.RUN.cleared = PD.RUN.cleared || {}; PD.RUN.cleared[room.id] = true;  // (L6c) 미니맵 상태
       this.lockDoors(room, false);       // 인접 문 개방
       this.bannerShow(room.id + ' 클리어! 문 개방', roleInt('pickup'));
-      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('powerup');
-      if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.25);
+      if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('doorOpen');   // (사운드 §3) 문 개방 스르륵
+      // (사운드 §4) 전투 종료 — 탐험 트랙 복귀 + 인텐시티 하강(여운)
+      if (GAME_AUDIO.setSection && this.exploreTrack) GAME_AUDIO.setSection(this.exploreTrack);
+      if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(0.2);
       this.toastShow(STORY_TEXT.clearBarks[Math.floor(Math.random() * STORY_TEXT.clearBarks.length)], roleInt('ui_accent'));
       // 클리어 보상: 방 중심에 코인 더미 + 낮은 확률 아이템(보스방은 spawnBoss/killEnemy 가 별도 처리)
       if (room.kindHint !== 'boss') {

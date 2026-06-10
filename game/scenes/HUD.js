@@ -65,7 +65,7 @@
       this.miniBadges = [];           // 배지 텍스트 풀(재사용)
       this.miniVisible = true;
       this.miniToggle = this.add.text(W - 16, 80, '🗺', { fontFamily: 'monospace', fontSize: '18px', color: WHITE }).setOrigin(1, 0).setDepth(1004).setScrollFactor(0).setInteractive({ useHandCursor: true });
-      this.miniToggle.on('pointerdown', function () { self.miniVisible = !self.miniVisible; self.miniToggle.setAlpha(self.miniVisible ? 1 : 0.45); });
+      this.miniToggle.on('pointerdown', function () { self.miniVisible = !self.miniVisible; self.miniToggle.setAlpha(self.miniVisible ? 1 : 0.45); if (window.GAME_AUDIO && window.GAME_AUDIO.sfx) window.GAME_AUDIO.sfx('minimap'); });
     },
 
     // 배지 텍스트 풀 — 필요 수만큼 생성·재사용, 나머지 숨김
