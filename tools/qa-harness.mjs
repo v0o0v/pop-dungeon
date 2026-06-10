@@ -89,6 +89,79 @@ function makeCtx() {
   return win
 }
 
+// ── [E] 전용: 실 Phaser(vendored) 로드 컨텍스트 ───────────────────────────────
+//   PR #6 교훈: 관대한 mock 은 실 API 에 없는 메서드 호출(ScenePlugin.getScene)을
+//   숨긴다. 그래서 [E] 는 mock 이 아니라 engine/phaser.min.js *실물* 을 Node VM 에
+//   로드해 표면을 추출하고, 그 표면에서만 spy 를 만들어 씬 전환 경로를 검증한다.
+function makePhaserCtx() {
+  const store = {}
+  const win = {}
+  win.window = win; win.globalThis = win; win.self = win
+  win.console = console; win.Math = Math; win.Date = Date
+  win.localStorage = {
+    getItem: (k) => (k in store ? store[k] : null),
+    setItem: (k, v) => { store[k] = String(v) },
+    removeItem: (k) => { delete store[k] }
+  }
+  win.location = { search: '' }
+  win.module = undefined
+  // Phaser 4 부팅에 필요한 최소 브라우저 전역(렌더는 안 함 — 클래스 표면만 필요)
+  const mkCtx2d = () => new Proxy({}, {
+    get: (t, p) => {
+      if (p === 'canvas') return null
+      if (typeof p === 'string' && /Style|Enabled|Quality|Align|Baseline|width|height/.test(p)) return ''
+      return () => mkCtx2d()
+    },
+    set: () => true
+  })
+  const mkCanvas = () => ({
+    getContext: () => mkCtx2d(), style: {}, width: 0, height: 0,
+    addEventListener() {}, removeEventListener() {}, toDataURL: () => '', parentNode: null
+  })
+  win.document = {
+    createElement: (tag) => (tag === 'canvas' ? mkCanvas() : { getContext: () => mkCtx2d(), style: {}, addEventListener() {}, removeEventListener() {} }),
+    documentElement: { style: {} },
+    body: { appendChild() {}, removeChild() {} },
+    readyState: 'complete', addEventListener() {}, removeEventListener() {}
+  }
+  win.navigator = { userAgent: 'node-qa-harness' }
+  win.setTimeout = setTimeout; win.clearTimeout = clearTimeout
+  win.setInterval = setInterval; win.clearInterval = clearInterval
+  win.addEventListener = () => {}; win.removeEventListener = () => {}
+  win.Image = class { constructor() { this.style = {} } addEventListener() {} removeEventListener() {} }
+  win.HTMLCanvasElement = class {}
+  win.HTMLVideoElement = class {}
+  win.HTMLImageElement = win.Image
+  win.ImageData = class {}
+  win.Blob = class {}
+  win.URL = { createObjectURL: () => '', revokeObjectURL: () => {} }
+  win.performance = { now: () => Date.now() }
+  win.requestAnimationFrame = (fn) => setTimeout(fn, 16)
+  win.cancelAnimationFrame = (id) => clearTimeout(id)
+  win.AudioContext = class { constructor() { this.state = 'suspended' } }
+  win.FontFace = class {}
+  win.XMLHttpRequest = class { open() {} send() {} addEventListener() {} }
+  class SoundForgeStub { constructor() {} sfx() {} startBgm() {} setSection() {} setIntensity() {} unlock() {} resume() {} }
+  win.SoundForge = SoundForgeStub
+  const ctx = vm.createContext(win)
+  const run = (code, name) => vm.runInContext(code, ctx, { filename: name })
+  run(read('engine/phaser.min.js'), 'phaser.min.js')      // 실물 — mock 아님
+  run(read('engine/stylekit.js'), 'stylekit.js')
+  run(read('engine/abilitykit.js'), 'abilitykit.js')
+  run(read('data/style.data.js'), 'style.data.js')
+  run(read('data/abilities.data.js'), 'abilities.data.js')
+  run(read('data/items.data.js'), 'items.data.js')
+  run(read('data/audio.data.js'), 'audio.data.js')
+  run(read('data/world.data.js'), 'world.data.js')
+  run(read('data/npcs.data.js'), 'npcs.data.js')
+  run(read('data/quests.data.js'), 'quests.data.js')
+  run(read('data/codex.data.js'), 'codex.data.js')
+  run(read('data/floors/templates.js'), 'templates.js')
+  run(read('game/core.js'), 'core.js')
+  run(read('game/scenes/WorldMap.js'), 'WorldMap.js')
+  return win
+}
+
 const win = makeCtx()
 const PD = win.PD
 
@@ -350,6 +423,109 @@ function checkDataIntegrity() {
 }
 
 // ════════════════════════════════════════════════════════════════════════════
+// [E] 씬 전환 API 표면 + WorldMap 경로 (PR #6 회귀 가드)
+// ────────────────────────────────────────────────────────────────────────────
+// PR #6 결함: WorldMap._enterDungeon/_goVillage 가 Phaser 4 ScenePlugin 에 없는
+//   getScene 을 호출 → 가드 항상 falsy → 던전 진입 영구 차단. 본 하니스(코어만
+//   로드)와 village 테스트(WorldMap 미로드) 어느 쪽도 이 경로를 커버하지 않아
+//   브라우저 실검증에서만 발견됐다. 재발 방지 3중 가드:
+//   E1. 실물 Phaser 표면 드리프트 감시 — vendored phaser.min.js 를 로드해
+//       ScenePlugin.get 존재 / ScenePlugin.getScene 부재 / SceneManager.getScene
+//       존재를 확인(Phaser 업그레이드 시 계약 변화 즉시 감지).
+//   E2. 정적 가드 — game/scenes/*.js 의 ScenePlugin 호출(this.scene.X / self.scene.X /
+//       `var sm = this.scene` 별칭)이 실물 표면에 있는 메서드만 쓰는지 전수 검사.
+//   E3. 동적 경로 — 실물 표면에서만 생성한 strict spy 로 WorldMap._enterDungeon /
+//       _goVillage 를 호출해 start('Dungeon')/start('Village') 를 단언(폴백 미발동).
+//       spy 는 실물 prototype 메서드 목록으로만 만들므로 getScene 은 구조적으로
+//       undefined — 관대한 mock 이 버그를 숨길 수 없다.
+// ════════════════════════════════════════════════════════════════════════════
+function makeStrictScenePlugin(ScenePluginProto, calls) {
+  // 실물 prototype 의 메서드에서만 spy 생성 — 없는 메서드는 spy 에도 없다(strict)
+  const mock = Object.create(null)
+  for (const k of Object.keys(ScenePluginProto)) {
+    if (typeof ScenePluginProto[k] !== 'function') continue
+    mock[k] = (...args) => {
+      calls.push([k, ...args])
+      if (k === 'get') return { sys: { settings: { key: args[0] } } } // 등록된 씬으로 간주
+      return mock
+    }
+  }
+  return mock
+}
+
+function checkSceneApiSurface() {
+  section('[E] 씬 전환 API 표면 + WorldMap 경로 (PR #6 회귀 가드)')
+  let pwin = null
+  try { pwin = makePhaserCtx() }
+  catch (e) {
+    ok(false, 'vendored Phaser + WorldMap 로드', e.message)
+    return
+  }
+  const P = pwin.Phaser
+  ok(P && P.VERSION === '4.1.0', 'vendored Phaser 로드 (' + (P ? P.VERSION : '없음') + ')')
+
+  // E1. 표면 드리프트 감시
+  const sp = P && P.Scenes && P.Scenes.ScenePlugin && P.Scenes.ScenePlugin.prototype
+  const smgr = P && P.Scenes && P.Scenes.SceneManager && P.Scenes.SceneManager.prototype
+  ok(sp && typeof sp.get === 'function' && typeof sp.start === 'function',
+    'ScenePlugin 표면: get/start 존재')
+  ok(sp && typeof sp.getScene === 'undefined',
+    'ScenePlugin 표면: getScene 부재(PR #6 의 잘못된 가정 — SceneManager 전용 API)')
+  ok(smgr && typeof smgr.getScene === 'function' && typeof smgr.getScenes === 'function',
+    'SceneManager 표면: getScene/getScenes 존재')
+  if (!sp) return
+
+  // E2. 정적 가드 — 씬 파일들의 ScenePlugin 호출이 전부 실물 표면에 있는지
+  const sceneFiles = readdirSync(path.join(ROOT, 'game/scenes')).filter((f) => f.endsWith('.js'))
+  const violations = []
+  for (const f of sceneFiles) {
+    const src = read('game/scenes/' + f)
+    // this.scene / self.scene 직접 호출 + `var sm = this.scene` 류 별칭 호출 수집
+    const aliases = []
+    for (const m of src.matchAll(/\b(?:var|let|const)\s+(\w+)\s*=\s*this\.scene\s*;/g)) aliases.push(m[1])
+    const callPatterns = [/\b(?:this|self)\.scene\.(\w+)\s*\(/g]
+    for (const a of aliases) callPatterns.push(new RegExp('\\b' + a + '\\.(\\w+)\\s*\\(', 'g'))
+    for (const re of callPatterns) {
+      for (const m of src.matchAll(re)) {
+        const method = m[1]
+        if (typeof sp[method] !== 'function') violations.push(f + ': this.scene.' + method + '()')
+      }
+    }
+  }
+  ok(violations.length === 0, '씬 파일 ScenePlugin 호출 전수 — 실물 표면 밖 메서드 0' +
+    (violations.length ? ' — ' + violations.join(', ') : ''))
+
+  // E3. 동적 경로 — WorldMap._enterDungeon → start('Dungeon')
+  const WM = pwin.PD && pwin.PD.scenes && pwin.PD.scenes.WorldMap
+  ok(!!WM, 'WorldMap 씬 클래스 등록(실물 Phaser.Class 로 생성)')
+  if (!WM) return
+
+  const calls1 = []
+  let toastCalled = false
+  const fake1 = { scene: makeStrictScenePlugin(sp, calls1), _toastShow: () => { toastCalled = true } }
+  ok(typeof fake1.scene.getScene === 'undefined', 'strict spy 에 getScene 부재(관대 mock 방지 자체 검증)')
+  let enterErr = null
+  try {
+    WM.prototype._enterDungeon.call(fake1, { order: 1, floors: [1, 2], id: 'region-01', name: 'QA검증지역' })
+  } catch (e) { enterErr = e }
+  ok(!enterErr, '_enterDungeon 예외 0' + (enterErr ? ' — ' + enterErr.message : ''))
+  ok(calls1.some((c) => c[0] === 'start' && c[1] === 'Dungeon'),
+    '_enterDungeon → scene.start(Dungeon) 호출(폴백 아님)')
+  ok(!toastCalled, '_enterDungeon → 던전 미등록 폴백 토스트 미발동')
+  ok(pwin.PD.RUN && pwin.PD.RUN.floor === 1 && pwin.PD.RUN.region === 1,
+    '_enterDungeon → PD.RUN 지역/층 기록(region 1, floor 1)')
+
+  // E3. 동적 경로 — WorldMap._goVillage → start('Village')
+  const calls2 = []
+  const fake2 = { scene: makeStrictScenePlugin(sp, calls2) }
+  let backErr = null
+  try { WM.prototype._goVillage.call(fake2) } catch (e) { backErr = e }
+  ok(!backErr, '_goVillage 예외 0' + (backErr ? ' — ' + backErr.message : ''))
+  ok(calls2.some((c) => c[0] === 'start' && c[1] === 'Village'),
+    '_goVillage → scene.start(Village) 호출(Title 폴백 아님)')
+}
+
+// ════════════════════════════════════════════════════════════════════════════
 // 브라우저 봇 스크립트(재현용 박제) — preview_eval 로 주입해 game.loop.step() 구동.
 //   플랜 §5 입력 정책: 고정 시드 + 가장 가까운 적 방향 이동·자동발사 의존·탄막 근접
 //   닷지·방클리어 후 BFS/A* 미답 문 이동·보스방 도달 시 측정 종료.
@@ -404,6 +580,7 @@ function main() {
   const graphStats = checkRoomGraphs()
   const clearStats = checkClearTimes()
   checkDataIntegrity()
+  checkSceneApiSurface()
 
   const result = {
     pass, fail,
