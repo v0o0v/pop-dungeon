@@ -15,13 +15,18 @@ import { fileURLToPath, pathToFileURL } from 'node:url'
 const here = dirname(fileURLToPath(import.meta.url))
 const root = resolve(here, '..')
 const mod = await import(pathToFileURL(resolve(root, 'data/index.mjs')).href)
-const { STYLE, ABILITIES, ITEMS, AUDIO } = mod.default || mod
+const { STYLE, ABILITIES, ITEMS, AUDIO, WORLD, NPCS, QUESTS, CODEX } = mod.default || mod
 
 const out = [
   ['style.json', STYLE],
   ['abilities.json', ABILITIES],
   ['items.json', ITEMS],
-  ['audio.json', AUDIO]
+  ['audio.json', AUDIO],
+  // RPG 개편 신규 데이터(L3) — world/npcs/quests/codex. floors 는 별도 lint(lint-floors).
+  ['world.json', WORLD],
+  ['npcs.json', NPCS],
+  ['quests.json', QUESTS],
+  ['codex.json', CODEX]
 ]
 for (const [name, obj] of out) {
   writeFileSync(resolve(root, name), JSON.stringify(obj, null, 2) + '\n', 'utf8')

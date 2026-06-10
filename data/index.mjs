@@ -15,6 +15,10 @@ const { STYLE } = require('./style.data.js')
 const { ABILITIES } = require('./abilities.data.js')
 const { ITEMS } = require('./items.data.js')
 const { AUDIO } = require('./audio.data.js')
+const { WORLD } = require('./world.data.js')
+const { NPCS } = require('./npcs.data.js')
+const { QUESTS } = require('./quests.data.js')
+const { CODEX } = require('./codex.data.js')
 
-export { STYLE, ABILITIES, ITEMS, AUDIO }
-export default { STYLE, ABILITIES, ITEMS, AUDIO }
+export { STYLE, ABILITIES, ITEMS, AUDIO, WORLD, NPCS, QUESTS, CODEX }
+export default { STYLE, ABILITIES, ITEMS, AUDIO, WORLD, NPCS, QUESTS, CODEX }
