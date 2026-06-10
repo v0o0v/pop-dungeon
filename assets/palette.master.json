@@ -2,123 +2,90 @@
   "slug": "pop-dungeon",
   "master_palette": {
     "ramps": {
+      "stone": [
+        "#1b2030",
+        "#2a3349",
+        "#3f4f6b",
+        "#5d7693"
+      ],
+      "torch": [
+        "#4a2210",
+        "#8a3d1c",
+        "#d96a28",
+        "#ffa53a",
+        "#ffe9a8"
+      ],
       "hero": [
-        "#12463f",
-        "#1ba79c",
-        "#33d2bd",
-        "#7af0dc"
+        "#0f3f38",
+        "#188a72",
+        "#3fd6a8",
+        "#aef7dd"
       ],
-      "slime": [
-        "#234d18",
-        "#2c6b22",
-        "#3a8e2a",
-        "#4fae3a",
-        "#9be86b"
-      ],
-      "royal": [
-        "#3e1f70",
-        "#7a3fd0",
-        "#a86bff",
-        "#c08bff",
-        "#e3c8ff"
-      ],
-      "bat": [
-        "#2f3270",
-        "#5a5eb0",
-        "#6b6fbf",
-        "#9a9ee8"
-      ],
-      "ember": [
-        "#6e2418",
-        "#d4583a",
-        "#ff9f6b"
-      ],
-      "candy": [
-        "#2a0e18",
-        "#5a0f28",
-        "#d12a5a",
-        "#ff4f7a",
-        "#ff6b9a",
-        "#ff8fb0"
+      "scarlet": [
+        "#531222",
+        "#a02038",
+        "#e83a52",
+        "#ff8d7a"
       ],
       "gold": [
-        "#8a5a10",
-        "#d98a1f",
-        "#ff9f1a",
-        "#ffd34a",
-        "#fff6c0"
+        "#7a4a12",
+        "#c98a1f",
+        "#ffc63a",
+        "#fff1b8"
       ],
-      "cyan": [
-        "#1a3a44",
-        "#2bb6e0",
-        "#7af0ff",
-        "#eaffff"
+      "venom": [
+        "#173a1c",
+        "#2f7a2c",
+        "#5cc23e",
+        "#c2f57e"
+      ],
+      "arcane": [
+        "#2b1a4d",
+        "#5d35a8",
+        "#9a66e8",
+        "#d9b8ff"
       ],
       "steel": [
-        "#10243a",
-        "#22406e",
-        "#4a78c8",
-        "#9ad0ff"
-      ],
-      "portal": [
-        "#285ac8",
-        "#5ab4ff",
-        "#c8ebff"
-      ],
-      "wood": [
-        "#3e2010",
-        "#7a4422",
-        "#b06a3a",
-        "#caa06a"
-      ],
-      "stone": [
-        "#241640",
-        "#3a2a60",
-        "#6a4ad0",
-        "#b89cff"
-      ],
-      "mist": [
-        "#2a3050",
-        "#44364a",
-        "#6a7a90",
-        "#9fb3c8",
-        "#cfd8e3"
+        "#232c40",
+        "#45526e",
+        "#7d8fae",
+        "#c6d4e6"
       ]
     },
     "neutrals": {
-      "black": "#1a2233",
+      "black": "#15121f",
       "white": "#ffffff"
     },
-    "background": "#161a2e"
+    "background": "#10131f"
   },
   "role_colors": {
-    "player": "#33d2bd",
-    "enemy": "#ff8fb0",
-    "danger": "#ff4f7a",
-    "pickup": "#ffd34a",
-    "ui_accent": "#7af0ff"
+    "player": "#3fd6a8",
+    "enemy": "#ff8d7a",
+    "danger": "#e83a52",
+    "pickup": "#ffc63a",
+    "ui_accent": "#ffa53a"
   },
   "variants": {
     "floor_backgrounds": [
-      "#1a1030",
-      "#101a30",
-      "#102a20",
-      "#2a1018",
-      "#101830",
-      "#281a30",
-      "#301a10",
-      "#102828",
-      "#281028",
-      "#1a1040"
+      "#10131f",
+      "#150f24",
+      "#0f1a1c",
+      "#1c0f16",
+      "#0d1426",
+      "#1a1228",
+      "#1d130c",
+      "#0f1f17",
+      "#1d0f20",
+      "#141031"
     ],
     "boss_tints": [
-      "#b0ff8a",
-      "#8affd0",
-      "#ffb0b0",
-      "#ff9a6b",
-      "#ffd36b",
-      "#c8a0ff",
-      "#ff6bd0"
+      "#c2f57e",
+      "#aef7dd",
+      "#ff8d7a",
+      "#ffa53a",
+      "#ffc63a",
+      "#d9b8ff",
+      "#9a66e8"
     ]
   }
 }

@@ -17,53 +17,50 @@
   // 0) 비주얼 스타일 (style-architect 계약 — lint-style.mjs · engine/stylekit.js)
   //    게임 전체 색의 상류 권위(단일 진실). game.js 는 모든 색을 이 램프/역할색에서
   //    참조하고, emit-json.mjs 가 style.json + assets/palette.master.json 으로 추출한다.
-  //    무드: candy-pop-dungeon — 차가운 보라 어둠의 돌던전 위, 사탕처럼 쨍한 마스코트.
-  //    매체: vector(스무스) — game.js render.pixelArt:false 와 1:1 (D7).
+  //    무드: torchlit-pop-dungeon — 차가운 청남색 돌어둠 속, 횃불빛을 받은 도트 모험가.
+  //    매체: pixel(도트) — game.js render 블록과 1:1 미러 (D7).
+  //    팔레트: 램프 8개(33색) + 중립 2 + 배경 1 + 층 변주 9(배경 1 재사용) = 고유 45색 ≤ 48.
+  //    boss_tints 는 램프 색을 그대로 재사용(고유 색 수 증가 0).
   // ===========================================================================
   var STYLE = {
     "slug": "pop-dungeon",
     "schema_version": 1,
-    "medium": "vector",
+    "medium": "pixel",
     "tier": 2,
-    "mood": "candy-pop-dungeon",
+    "mood": "torchlit-pop-dungeon",
     "master_palette": {
       "ramps": {
-        "hero":   ["#12463f", "#1ba79c", "#33d2bd", "#7af0dc"],
-        "slime":  ["#234d18", "#2c6b22", "#3a8e2a", "#4fae3a", "#9be86b"],
-        "royal":  ["#3e1f70", "#7a3fd0", "#a86bff", "#c08bff", "#e3c8ff"],
-        "bat":    ["#2f3270", "#5a5eb0", "#6b6fbf", "#9a9ee8"],
-        "ember":  ["#6e2418", "#d4583a", "#ff9f6b"],
-        "candy":  ["#2a0e18", "#5a0f28", "#d12a5a", "#ff4f7a", "#ff6b9a", "#ff8fb0"],
-        "gold":   ["#8a5a10", "#d98a1f", "#ff9f1a", "#ffd34a", "#fff6c0"],
-        "cyan":   ["#1a3a44", "#2bb6e0", "#7af0ff", "#eaffff"],
-        "steel":  ["#10243a", "#22406e", "#4a78c8", "#9ad0ff"],
-        "portal": ["#285ac8", "#5ab4ff", "#c8ebff"],
-        "wood":   ["#3e2010", "#7a4422", "#b06a3a", "#caa06a"],
-        "stone":  ["#241640", "#3a2a60", "#6a4ad0", "#b89cff"],
-        "mist":   ["#2a3050", "#44364a", "#6a7a90", "#9fb3c8", "#cfd8e3"]
+        "stone":   ["#1b2030", "#2a3349", "#3f4f6b", "#5d7693"],
+        "torch":   ["#4a2210", "#8a3d1c", "#d96a28", "#ffa53a", "#ffe9a8"],
+        "hero":    ["#0f3f38", "#188a72", "#3fd6a8", "#aef7dd"],
+        "scarlet": ["#531222", "#a02038", "#e83a52", "#ff8d7a"],
+        "gold":    ["#7a4a12", "#c98a1f", "#ffc63a", "#fff1b8"],
+        "venom":   ["#173a1c", "#2f7a2c", "#5cc23e", "#c2f57e"],
+        "arcane":  ["#2b1a4d", "#5d35a8", "#9a66e8", "#d9b8ff"],
+        "steel":   ["#232c40", "#45526e", "#7d8fae", "#c6d4e6"]
       },
-      "neutrals": { "black": "#1a2233", "white": "#ffffff" },
-      "background": "#161a2e"
+      "neutrals": { "black": "#15121f", "white": "#ffffff" },
+      "background": "#10131f"
     },
     "role_colors": {
-      "player": "#33d2bd",
-      "enemy": "#ff8fb0",
-      "danger": "#ff4f7a",
-      "pickup": "#ffd34a",
-      "ui_accent": "#7af0ff"
+      "player": "#3fd6a8",
+      "enemy": "#ff8d7a",
+      "danger": "#e83a52",
+      "pickup": "#ffc63a",
+      "ui_accent": "#ffa53a"
     },
     "variants": {
-      "floor_backgrounds": ["#1a1030", "#101a30", "#102a20", "#2a1018", "#101830", "#281a30", "#301a10", "#102828", "#281028", "#1a1040"],
-      "boss_tints": ["#b0ff8a", "#8affd0", "#ffb0b0", "#ff9a6b", "#ffd36b", "#c8a0ff", "#ff6bd0"]
+      "floor_backgrounds": ["#10131f", "#150f24", "#0f1a1c", "#1c0f16", "#0d1426", "#1a1228", "#1d130c", "#0f1f17", "#1d0f20", "#141031"],
+      "boss_tints": ["#c2f57e", "#aef7dd", "#ff8d7a", "#ffa53a", "#ffc63a", "#d9b8ff", "#9a66e8"]
     },
-    "proportions": { "head_to_body": "1:1", "silhouette": "round-blob", "min_feature_px": 2 },
-    "line": { "outline": "full", "outline_color": "darker-of-fill", "weight_px": 2 },
-    "shading": { "model": "soft", "light_dir": "NW", "ramp_steps": 3, "hue_shift": "warm-light-cool-shadow" },
-    "render": { "pixelArt": false, "antialias": true, "roundPixels": false },
+    "proportions": { "head_to_body": "1:1.4", "silhouette": "chibi-round", "min_feature_px": 1 },
+    "line": { "outline": "full", "outline_color": "darker-of-fill", "weight_px": 1 },
+    "shading": { "model": "cell", "light_dir": "NW", "ramp_steps": 3, "hue_shift": "warm-light-cool-shadow", "dither": "sparse" },
+    "render": { "pixelArt": true, "antialias": false, "roundPixels": true },
     "lintConfig": {
       "min_contrast_ratio": 3.0,
-      "max_palette_colors": 80,
-      "known_moods": ["candy-pop-dungeon", "custom"],
+      "max_palette_colors": 48,
+      "known_moods": ["torchlit-pop-dungeon", "custom"],
       "ip_redwords": ["gungeon", "enter the gungeon", "엔터더건전", "isaac", "soul knight", "nuclear throne", "mario", "zelda"]
     }
   };
@@ -152,10 +149,10 @@
       "originalityNote": "전 아이템 절차 설계 오리지널 — 원작 아이템명/아이콘 미사용. 추상 룬/젬/마스코트 모티프."
     },
     "rarities": [
-      { "id": "common", "name": "일반", "color": "#cfd8e3" },
-      { "id": "rare", "name": "희귀", "color": "#5ad1ff" },
-      { "id": "epic", "name": "영웅", "color": "#c08bff" },
-      { "id": "legendary", "name": "전설", "color": "#ffcf4a" }
+      { "id": "common", "name": "일반", "color": "#c6d4e6" },
+      { "id": "rare", "name": "희귀", "color": "#3fd6a8" },
+      { "id": "epic", "name": "영웅", "color": "#9a66e8" },
+      { "id": "legendary", "name": "전설", "color": "#ffc63a" }
     ],
     "items": [
       {

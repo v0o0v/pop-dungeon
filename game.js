@@ -1,8 +1,9 @@
 /* ============================================================================
  * 팡팡 던전 (Pop Dungeon) — 탑다운 불릿헬 로그라이크 (세로 모바일)
  * ----------------------------------------------------------------------------
- * 엔진: Phaser 4.1.0 (MIT) + VectorForge(절차 카툰 그래픽) + SoundForge(Tone.js 절차 사운드)
- *       + AbilityKit(스킬 런타임) + JoystickKit(아날로그 이동) + MobileHarness(웹뷰 스케일/터치).
+ * 엔진: Phaser 4.1.0 (MIT) + PX 도트 래스터라이저(VectorForge.bake ss:1 플럼빙 재사용)
+ *       + SoundForge(Tone.js 절차 사운드) + AbilityKit + JoystickKit + MobileHarness.
+ * 룩: torchlit-pop-dungeon — 픽셀(도트) 매체 · 셀 3단 NW 셰이딩 · 1px 풀 아웃라인 (STYLE.md).
  * 에셋·사운드·이름: 100% 코드 생성 오리지널(CC0/IP-safe). 엔터더건전 등 원작 자산 미사용.
  * 레퍼런스: game-dna/shooters-roguelite.md (닷지롤 무적·방클리어·층진행·아이템 시너지)를
  *           단일플레이 모바일 축소판으로 재현.
@@ -70,189 +71,321 @@
   var DROP_POOL = (window.POP_ITEMS.items || []).filter(function (it) { return it.kind === 'equipment' || it.kind === 'consumable'; });
 
   // ===========================================================================
-  // VectorForge 아트 베이킹 — 귀여운 카툰 (둥근 실루엣 + 굵은 외곽선 + 글로우)
+  // 도트 아트 베이킹 — 횃불 돌던전 픽셀 룩 (STYLE §3·§4)
+  //   · 32px급 디테일 도트 · 2등신 치비 · 1px 잉크 풀 아웃라인(darker-of-fill)
+  //   · 셀 3단(NW 광원 고정) + 넓은 면에만 절제 디더 · 그라데이션·글로우 금지
+  //   · VectorForge.bake 는 ss:1(슈퍼샘플 없음) 캔버스→텍스처 플럼빙으로만 쓰고,
+  //     모든 드로잉은 아래 PX 래스터라이저가 정수 좌표 1px 단위로만 찍는다.
   // ===========================================================================
-  function outline(ctx, fn, color, w) {
-    ctx.save(); ctx.lineJoin = 'round'; ctx.lineWidth = w == null ? 2 : w; ctx.strokeStyle = color || INK;
-    fn(); ctx.stroke(); ctx.restore();
+
+  // ── PX: 마스크 기반 1px 래스터라이저 ───────────────────────────────────────
+  function dot(ctx, x, y, c) { ctx.fillStyle = c; ctx.fillRect(x | 0, y | 0, 1, 1); }
+  function bar(ctx, x, y, bw, bh, c) { ctx.fillStyle = c; ctx.fillRect(x | 0, y | 0, bw | 0, bh | 0); }
+
+  function pxShape(w, h) {
+    var m = new Uint8Array(w * h);
+    var s = { w: w, h: h, m: m };
+    s.ellipse = function (cx, cy, rx, ry) {
+      var y0 = Math.max(0, Math.floor(cy - ry)), y1 = Math.min(h - 1, Math.ceil(cy + ry));
+      var x0 = Math.max(0, Math.floor(cx - rx)), x1 = Math.min(w - 1, Math.ceil(cx + rx));
+      for (var y = y0; y <= y1; y++) for (var x = x0; x <= x1; x++) {
+        var nx = (x + 0.5 - cx) / rx, ny = (y + 0.5 - cy) / ry;
+        if (nx * nx + ny * ny <= 1) m[y * w + x] = 1;
+      }
+      return s;
+    };
+    s.rect = function (x0, y0, rw, rh) {
+      var y1 = Math.min(h, Math.round(y0 + rh)), x1 = Math.min(w, Math.round(x0 + rw));
+      for (var y = Math.max(0, Math.round(y0)); y < y1; y++)
+        for (var x = Math.max(0, Math.round(x0)); x < x1; x++) m[y * w + x] = 1;
+      return s;
+    };
+    s.poly = function (pts) {
+      var minY = h, maxY = 0, i;
+      for (i = 0; i < pts.length; i++) { if (pts[i][1] < minY) minY = pts[i][1]; if (pts[i][1] > maxY) maxY = pts[i][1]; }
+      for (var y = Math.max(0, Math.floor(minY)); y <= Math.min(h - 1, Math.ceil(maxY)); y++) {
+        var yc = y + 0.5, xs = [];
+        for (i = 0; i < pts.length; i++) {
+          var a = pts[i], b = pts[(i + 1) % pts.length];
+          if ((a[1] <= yc && b[1] > yc) || (b[1] <= yc && a[1] > yc)) xs.push(a[0] + (yc - a[1]) / (b[1] - a[1]) * (b[0] - a[0]));
+        }
+        xs.sort(function (p, q) { return p - q; });
+        for (var k = 0; k + 1 < xs.length; k += 2)
+          for (var x = Math.max(0, Math.round(xs[k])); x < Math.min(w, Math.round(xs[k + 1])); x++) m[y * w + x] = 1;
+      }
+      return s;
+    };
+    return s;
   }
 
+  // 마스크 → 셀 3단 칠 + 1px 풀 아웃라인(가장자리 픽셀).
+  // o = { cols:[dark,mid,light] 또는 [단색], outline, cx,cy,rx,ry(셰이딩 프레임), dither }
+  function pxPaint(ctx, s, o) {
+    var w = s.w, h = s.h, m = s.m, cols = o.cols, ink = o.outline;
+    for (var y = 0; y < h; y++) for (var x = 0; x < w; x++) {
+      if (!m[y * w + x]) continue;
+      var edge = x === 0 || y === 0 || x === w - 1 || y === h - 1 ||
+        !m[y * w + x - 1] || !m[y * w + x + 1] || !m[(y - 1) * w + x] || !m[(y + 1) * w + x];
+      if (edge && ink) { dot(ctx, x, y, ink); continue; }
+      var c = cols[0];
+      if (cols.length > 1) {
+        var nx = (x + 0.5 - o.cx) / o.rx, ny = (y + 0.5 - o.cy) / o.ry;
+        var t = -(nx * 0.38 + ny * 0.62);                  // NW 광원: 좌상이 밝다
+        var band = t > 0.30 ? 2 : t > -0.26 ? 1 : 0;
+        if (o.dither) {                                    // 경계 체커 디더(넓은 면 전용)
+          if (band === 1 && t > 0.18 && ((x + y) & 1)) band = 2;
+          else if (band === 0 && t > -0.38 && ((x + y) & 1)) band = 1;
+        }
+        c = cols[band];
+      }
+      dot(ctx, x, y, c);
+    }
+  }
+
+  function pxShadow(ctx, w, h, cx, cy, rx, ry) {
+    pxPaint(ctx, pxShape(w, h).ellipse(cx, cy, rx, ry), { cols: [rgba(INK, 0.28)] });
+  }
+
+  // 발광 탄 — 방사 4단 픽셀 링(코어→림). 글로우 셰이더 대체.
+  function pxOrb(ctx, W, H, cx, cy, r, cols) {
+    for (var y = 0; y < H; y++) for (var x = 0; x < W; x++) {
+      var dx = x + 0.5 - cx, dy = y + 0.5 - cy, d = Math.sqrt(dx * dx + dy * dy);
+      if (d > r) continue;
+      dot(ctx, x, y, d <= r * 0.34 ? cols[0] : d <= r * 0.62 ? cols[1] : d <= r - 1.2 ? cols[2] : cols[3]);
+    }
+  }
+
+  // 1px 타원 링(코인 각인 등)
+  function pxRing(ctx, cx, cy, rx, ry, c) {
+    for (var a = 0; a < 64; a++) { var th = a / 64 * Math.PI * 2; dot(ctx, cx + Math.cos(th) * rx, cy + Math.sin(th) * ry, c); }
+  }
+
+  function cel(name) { return [ramp(name, 1), ramp(name, 2), ramp(name, 3)]; }
+
   function bakeArt(scene) {
-    var VF = VectorForge.helpers;
+    function bakePx(key, w, h, frames) { VectorForge.bake(scene, key, { w: w, h: h, ss: 1, frames: frames }); }
 
-    // 플레이어 '팡이' — 둥근 청록 마스코트 + 큰 눈 + 작은 팝건. 2프레임 idle bob.
+    // 플레이어 '팡이' — 민트 2등신 치비 팝거너(시그니처: 어둠 속 횃불빛 받은 민트 히어로)
     function drawHero(ctx, w, h, t) {
-      var cx = w / 2, bob = t ? -1.4 : 0, by = 9 + bob;
-      // 그림자
-      VF.ellipse(ctx, cx, h - 3, 10, 3); ctx.fillStyle = rgba(INK, 0.22); ctx.fill();
-      // 팝건(오른쪽 작은 총)
-      ctx.save();
-      VF.rr(ctx, cx + 6, by + 9, 12, 5, 2.2);
-      ctx.fillStyle = ramp('gold', 2); ctx.fill();
-      outline(ctx, function () { VF.rr(ctx, cx + 6, by + 9, 12, 5, 2.2); }, INK, 1.6);
-      ctx.restore();
-      // 몸통(둥근 블롭 + 세로 그라데이션)
-      VF.blob(ctx, cx, by + 8, 11, 10, 0.05, 1.2);
-      ctx.fillStyle = VF.lin(ctx, cx, by - 3, cx, by + 19, [[0, ramp('hero', 3)], [0.55, ramp('hero', 2)], [1, ramp('hero', 1)]]); ctx.fill();
-      outline(ctx, function () { VF.blob(ctx, cx, by + 8, 11, 10, 0.05, 1.2); }, ramp('hero', 0), 2);
-      // 배 하이라이트
-      VF.ellipse(ctx, cx, by + 11, 6, 7); ctx.fillStyle = rgba(ramp('cyan', 3), 0.5); ctx.fill();
-      // 눈
-      [[-3.6, by + 6], [3.6, by + 6]].forEach(function (e) {
-        VF.circle(ctx, cx + e[0], e[1], 3); ctx.fillStyle = WHITE; ctx.fill();
-        outline(ctx, function () { VF.circle(ctx, cx + e[0], e[1], 3); }, INK, 1);
-        VF.circle(ctx, cx + e[0] + 0.6, e[1] + 0.5, 1.5); ctx.fillStyle = INK; ctx.fill();
-        VF.circle(ctx, cx + e[0] + 1.2, e[1] - 0.3, 0.6); ctx.fillStyle = WHITE; ctx.fill();
-      });
-      // 볼터치 + 미소
-      VF.circle(ctx, cx - 5.5, by + 9, 1.6); VF.circle(ctx, cx + 5.5, by + 9, 1.6); ctx.fillStyle = rgba(ramp('candy', 5), 0.5); ctx.fill();
-      ctx.beginPath(); ctx.arc(cx, by + 9, 2.2, 0.15 * Math.PI, 0.85 * Math.PI); ctx.lineWidth = 1.1; ctx.strokeStyle = ramp('hero', 0); ctx.stroke();
+      var bob = t ? -1 : 0, by = 7 + bob;
+      pxShadow(ctx, w, h, 18, 34.5, 9, 2.4);
+      // 몸통(작은 하체)
+      pxPaint(ctx, pxShape(w, h).ellipse(18, by + 20, 8, 6.5),
+        { cols: cel('hero'), outline: ramp('hero', 0), cx: 18, cy: by + 20, rx: 8, ry: 6.5 });
+      // 발(부츠)
+      bar(ctx, 13, 33, 4, 2, ramp('hero', 1)); bar(ctx, 19, 33, 4, 2, ramp('hero', 1));
+      bar(ctx, 13, 35, 4, 1, ramp('hero', 0)); bar(ctx, 19, 35, 4, 1, ramp('hero', 0));
+      // 머리(큰 치비 헤드)
+      pxPaint(ctx, pxShape(w, h).ellipse(18, by + 9, 10.5, 9.5),
+        { cols: cel('hero'), outline: ramp('hero', 0), cx: 18, cy: by + 9, rx: 10.5, ry: 9.5 });
+      // 배 패치
+      pxPaint(ctx, pxShape(w, h).ellipse(18, by + 22, 4, 3), { cols: [ramp('hero', 3)] });
+      // 좌상 스펙 하이라이트(횃불빛)
+      bar(ctx, 12, by + 3, 3, 1, ramp('hero', 3)); bar(ctx, 11, by + 4, 2, 1, ramp('hero', 3));
+      // 눈(흰자 3x4 + 잉크 동공 + 캐치라이트)
+      bar(ctx, 12, by + 6, 3, 4, WHITE); bar(ctx, 21, by + 6, 3, 4, WHITE);
+      bar(ctx, 13, by + 8, 2, 2, INK); bar(ctx, 22, by + 8, 2, 2, INK);
+      dot(ctx, 13, by + 8, WHITE); dot(ctx, 22, by + 8, WHITE);
+      // 볼터치(횃불 온기) + 미소
+      bar(ctx, 10, by + 11, 2, 1, ramp('torch', 2)); bar(ctx, 24, by + 11, 2, 1, ramp('torch', 2));
+      dot(ctx, 16, by + 12, INK); dot(ctx, 17, by + 13, INK); dot(ctx, 18, by + 13, INK); dot(ctx, 19, by + 12, INK);
+      // 팝건(머리 옆, 골드)
+      pxPaint(ctx, pxShape(w, h).rect(24, by + 16, 9, 4), { cols: [ramp('gold', 1)], outline: ramp('gold', 0) });
+      bar(ctx, 25, by + 17, 7, 1, ramp('gold', 2));
+      bar(ctx, 33, by + 17, 2, 2, INK);
     }
-    VectorForge.bake(scene, 'hero', { w: 36, h: 38, frames: [function (c, w, h) { drawHero(c, w, h, 0); }, function (c, w, h) { drawHero(c, w, h, 1); }] });
+    bakePx('hero', 36, 38, [function (c, w, h) { drawHero(c, w, h, 0); }, function (c, w, h) { drawHero(c, w, h, 1); }]);
 
-    // 적: 슬라임(추적), 박쥐(비행), 포탑(사격), 오브(확산)
-    function blobEnemy(ctx, w, h, t, top, bot, line, eyes) {
-      var cx = w / 2, sq = t ? 1.0 : 1.06, by = h * 0.5;
-      VF.ellipse(ctx, cx, h - 3, w * 0.32, 3); ctx.fillStyle = rgba(INK, 0.2); ctx.fill();
-      ctx.save(); ctx.translate(cx, by); ctx.scale(1 / sq, sq); ctx.translate(-cx, -by);
-      VF.blob(ctx, cx, by, w * 0.36, 9, 0.07, 2.0);
-      ctx.fillStyle = VF.lin(ctx, cx, by - w * 0.4, cx, by + w * 0.4, [[0, top], [1, bot]]); ctx.fill();
-      outline(ctx, function () { VF.blob(ctx, cx, by, w * 0.36, 9, 0.07, 2.0); }, line, 2);
-      ctx.restore();
-      // 눈
-      var ex = eyes ? 3.4 : 0;
-      [[-ex, by - 1], [ex, by - 1]].forEach(function (e) {
-        VF.circle(ctx, cx + e[0], e[1], 2.4); ctx.fillStyle = WHITE; ctx.fill();
-        VF.circle(ctx, cx + e[0] + 0.4, e[1] + 0.3, 1.2); ctx.fillStyle = INK; ctx.fill();
-      });
+    // 슬라임(추적) — venom 돔 블롭
+    function drawSlime(ctx, w, h, t) {
+      pxShadow(ctx, w, h, 15, 25.5, 9, 2);
+      var s = t ? pxShape(w, h).ellipse(15, 16, 11, 8).rect(4, 18, 22, 6)
+                : pxShape(w, h).ellipse(15, 15, 10, 9).rect(5, 17, 20, 7);
+      pxPaint(ctx, s, { cols: cel('venom'), outline: ramp('venom', 0), cx: 15, cy: 15, rx: 11, ry: 9 });
+      dot(ctx, t ? 21 : 20, t ? 9 : 8, ramp('venom', 3));   // 젤리 방울
+      bar(ctx, 10, 13, 2, 3, WHITE); bar(ctx, 18, 13, 2, 3, WHITE);
+      dot(ctx, 11, 14, INK); dot(ctx, 11, 15, INK); dot(ctx, 19, 14, INK); dot(ctx, 19, 15, INK);
+      bar(ctx, 13, 18, 4, 1, ramp('venom', 0)); dot(ctx, 12, 17, ramp('venom', 0)); dot(ctx, 17, 17, ramp('venom', 0));
     }
-    VectorForge.bake(scene, 'slime', { w: 30, h: 28, frames: [function (c, w, h) { blobEnemy(c, w, h, 0, ramp('slime', 4), ramp('slime', 3), ramp('slime', 1), true); }, function (c, w, h) { blobEnemy(c, w, h, 1, ramp('slime', 4), ramp('slime', 3), ramp('slime', 1), true); }] });
-    VectorForge.bake(scene, 'orb', { w: 28, h: 28, frames: [function (c, w, h) { blobEnemy(c, w, h, 0, ramp('royal', 3), ramp('royal', 1), ramp('royal', 0), true); }, function (c, w, h) { blobEnemy(c, w, h, 1, ramp('royal', 3), ramp('royal', 1), ramp('royal', 0), true); }] });
+    bakePx('slime', 30, 28, [function (c, w, h) { drawSlime(c, w, h, 0); }, function (c, w, h) { drawSlime(c, w, h, 1); }]);
 
-    function bat(ctx, w, h, t) {
-      var cx = w / 2, cy = h / 2, flap = t ? -3 : 2;
-      // 날개
-      ctx.fillStyle = ramp('bat', 2);
-      VF.poly(ctx, [[cx - 3, cy], [cx - 13, cy + flap], [cx - 6, cy + 6]]); ctx.fill();
-      VF.poly(ctx, [[cx + 3, cy], [cx + 13, cy + flap], [cx + 6, cy + 6]]); ctx.fill();
-      outline(ctx, function () { VF.poly(ctx, [[cx - 3, cy], [cx - 13, cy + flap], [cx - 6, cy + 6]]); }, ramp('bat', 0), 1.4);
-      outline(ctx, function () { VF.poly(ctx, [[cx + 3, cy], [cx + 13, cy + flap], [cx + 6, cy + 6]]); }, ramp('bat', 0), 1.4);
-      VF.circle(ctx, cx, cy + 1, 6); ctx.fillStyle = VF.lin(ctx, cx, cy - 6, cx, cy + 7, [[0, ramp('bat', 3)], [1, ramp('bat', 1)]]); ctx.fill();
-      outline(ctx, function () { VF.circle(ctx, cx, cy + 1, 6); }, ramp('bat', 0), 2);
-      [[-2.2, cy], [2.2, cy]].forEach(function (e) { VF.circle(ctx, cx + e[0], e[1], 1.8); ctx.fillStyle = WHITE; ctx.fill(); VF.circle(ctx, cx + e[0], e[1] + 0.3, 0.9); ctx.fillStyle = INK; ctx.fill(); });
+    // 오브(확산) — arcane 부유 구체
+    function drawOrb(ctx, w, h, t) {
+      var bob = t ? -1 : 0;
+      pxShadow(ctx, w, h, 14, 25, 6, 1.6);
+      pxPaint(ctx, pxShape(w, h).ellipse(14, 13 + bob, 9.5, 9.5),
+        { cols: cel('arcane'), outline: ramp('arcane', 0), cx: 14, cy: 13 + bob, rx: 9.5, ry: 9.5 });
+      bar(ctx, 9, 8 + bob, 2, 1, ramp('arcane', 3)); dot(ctx, 9, 8 + bob, WHITE);
+      bar(ctx, 10, 12 + bob, 2, 3, WHITE); bar(ctx, 16, 12 + bob, 2, 3, WHITE);
+      dot(ctx, 11, 13 + bob, INK); dot(ctx, 11, 14 + bob, INK); dot(ctx, 17, 13 + bob, INK); dot(ctx, 17, 14 + bob, INK);
+      // 떠다니는 마력 불티
+      if (t) { dot(ctx, 5, 18, ramp('arcane', 3)); dot(ctx, 23, 6, ramp('arcane', 3)); }
+      else { dot(ctx, 4, 7, ramp('arcane', 3)); dot(ctx, 24, 17, ramp('arcane', 3)); }
     }
-    VectorForge.bake(scene, 'bat', { w: 30, h: 24, frames: [function (c, w, h) { bat(c, w, h, 0); }, function (c, w, h) { bat(c, w, h, 1); }] });
+    bakePx('orb', 28, 28, [function (c, w, h) { drawOrb(c, w, h, 0); }, function (c, w, h) { drawOrb(c, w, h, 1); }]);
 
-    function turret(ctx, w, h, t) {
-      var cx = w / 2, cy = h / 2;
-      VF.ellipse(ctx, cx, h - 3, 10, 3); ctx.fillStyle = rgba(INK, 0.2); ctx.fill();
-      // 베이스
-      VF.rr(ctx, cx - 10, cy - 2, 20, 12, 4); ctx.fillStyle = VF.lin(ctx, 0, cy - 2, 0, cy + 10, [[0, ramp('ember', 2)], [1, ramp('ember', 1)]]); ctx.fill();
-      outline(ctx, function () { VF.rr(ctx, cx - 10, cy - 2, 20, 12, 4); }, ramp('ember', 0), 2);
-      // 포신(펄스)
-      var pl = t ? 9 : 7; VF.rr(ctx, cx - 2, cy - 9, 4, pl, 1.5); ctx.fillStyle = INK; ctx.fill();
-      // 눈
-      VF.circle(ctx, cx, cy + 4, 3); ctx.fillStyle = ramp('gold', 4); ctx.fill();
-      VF.circle(ctx, cx + 0.4, cy + 4.3, 1.4); ctx.fillStyle = INK; ctx.fill();
+    // 박쥐(비행) — steel 날개
+    function drawBat(ctx, w, h, t) {
+      var flap = t ? -3 : 2;
+      pxPaint(ctx, pxShape(w, h).poly([[13, 11], [2, 11 + flap], [8, 17]]), { cols: [ramp('steel', 1)], outline: ramp('steel', 0) });
+      pxPaint(ctx, pxShape(w, h).poly([[17, 11], [28, 11 + flap], [22, 17]]), { cols: [ramp('steel', 1)], outline: ramp('steel', 0) });
+      bar(ctx, 11, 6, 2, 3, ramp('steel', 1)); bar(ctx, 17, 6, 2, 3, ramp('steel', 1));   // 귀
+      pxPaint(ctx, pxShape(w, h).ellipse(15, 13, 6.5, 5.5),
+        { cols: cel('steel'), outline: ramp('steel', 0), cx: 15, cy: 13, rx: 6.5, ry: 5.5 });
+      bar(ctx, 12, 11, 2, 2, WHITE); bar(ctx, 17, 11, 2, 2, WHITE);
+      dot(ctx, 13, 12, INK); dot(ctx, 18, 12, INK);
+      dot(ctx, 13, 16, WHITE); dot(ctx, 17, 16, WHITE);                                   // 송곳니
     }
-    VectorForge.bake(scene, 'turret', { w: 30, h: 30, frames: [function (c, w, h) { turret(c, w, h, 0); }, function (c, w, h) { turret(c, w, h, 1); }] });
+    bakePx('bat', 30, 24, [function (c, w, h) { drawBat(c, w, h, 0); }, function (c, w, h) { drawBat(c, w, h, 1); }]);
 
-    // 탄알
-    VectorForge.bake(scene, 'pbullet', { w: 14, h: 14, draw: function (ctx, w, h) {
-      var cx = w / 2; VF.glow(ctx, rgba(ramp('cyan', 2), 0.9), 6, function () { VF.circle(ctx, cx, cx, 5); ctx.fillStyle = VF.radial(ctx, cx, cx, 5, [[0, ramp('cyan', 3)], [0.5, ramp('cyan', 2)], [1, ramp('cyan', 1)]]); ctx.fill(); }); }
-    });
-    VectorForge.bake(scene, 'ebullet', { w: 16, h: 16, draw: function (ctx, w, h) {
-      var cx = w / 2;
-      VF.glow(ctx, rgba(ramp('candy', 4), 0.8), 4, function () { VF.circle(ctx, cx, cx, 5.5); ctx.fillStyle = VF.radial(ctx, cx, cx, 5.5, [[0, WHITE], [0.45, ramp('candy', 4)], [1, ramp('candy', 2)]]); ctx.fill(); });
-      outline(ctx, function () { VF.circle(ctx, cx, cx, 5.5); }, ramp('candy', 1), 1.6);
-    } });
-    // 황금 오비탈 탄(궁극기)
-    VectorForge.bake(scene, 'gbullet', { w: 18, h: 18, draw: function (ctx, w, h) {
-      var cx = w / 2; VF.glow(ctx, rgba(ramp('gold', 3), 0.95), 7, function () { VF.circle(ctx, cx, cx, 6.5); ctx.fillStyle = VF.radial(ctx, cx, cx, 6.5, [[0, ramp('gold', 4)], [0.5, ramp('gold', 3)], [1, ramp('gold', 1)]]); ctx.fill(); }); }
-    });
+    // 포탑(사격) — 잉걸불 화로 포탑
+    function drawTurret(ctx, w, h, t) {
+      var pl = t ? 12 : 10;
+      pxShadow(ctx, w, h, 15, 27, 10, 2);
+      // 포신
+      pxPaint(ctx, pxShape(w, h).rect(13, 17 - pl, 4, pl), { cols: [ramp('steel', 1)], outline: ramp('steel', 0) });
+      bar(ctx, 13, 17 - pl, 4, 1, INK);
+      // 베이스 + 돔
+      pxPaint(ctx, pxShape(w, h).rect(5, 17, 20, 9).ellipse(15, 17, 9, 5),
+        { cols: [ramp('torch', 1), ramp('torch', 1), ramp('torch', 2)], outline: ramp('torch', 0), cx: 15, cy: 19, rx: 10, ry: 7 });
+      dot(ctx, 7, 18, ramp('steel', 2)); dot(ctx, 22, 18, ramp('steel', 2));              // 리벳
+      dot(ctx, 7, 24, ramp('steel', 2)); dot(ctx, 22, 24, ramp('steel', 2));
+      // 골드 눈(화구)
+      bar(ctx, 12, 18, 6, 6, ramp('torch', 0));
+      bar(ctx, 13, 19, 4, 4, ramp('gold', 2)); dot(ctx, 13, 19, ramp('gold', 3));
+      bar(ctx, 15, 20, 2, 2, INK);
+    }
+    bakePx('turret', 30, 30, [function (c, w, h) { drawTurret(c, w, h, 0); }, function (c, w, h) { drawTurret(c, w, h, 1); }]);
 
-    // 픽업: 코인 / 하트 / 기력 / 상자 / 스타(아이템)
-    // 코인은 LIB.vfCoin 모양 그대로 + master gold 램프 상속(엔진 기본 팔레트 대신 STYLE)
-    VectorForge.bake(scene, 'coin', { w: 22, h: 22, frames: [0, 1, 2, 3].map(function (t) {
+    // 탄알(방사 픽셀 링 — 어둠 위에서 가장 밝게 읽힌다)
+    bakePx('pbullet', 14, 14, [function (ctx, w, h) { pxOrb(ctx, w, h, 7, 7, 5, [WHITE, ramp('hero', 3), ramp('hero', 2), ramp('hero', 1)]); }]);
+    bakePx('ebullet', 16, 16, [function (ctx, w, h) { pxOrb(ctx, w, h, 8, 8, 6, [WHITE, ramp('scarlet', 3), ramp('scarlet', 2), ramp('scarlet', 1)]); }]);
+    bakePx('gbullet', 18, 18, [function (ctx, w, h) { pxOrb(ctx, w, h, 9, 9, 6.5, [WHITE, ramp('gold', 3), ramp('gold', 2), ramp('gold', 1)]); }]);
+
+    // 코인(회전 4프레임)
+    bakePx('coin', 22, 22, [9, 6, 2.2, 6].map(function (rx) {
       return function (ctx, w, h) {
-        var cx = w / 2, cy = h / 2, rx = [9, 6, 2.2, 6][t]; // 회전 폭
-        VF.glow(ctx, rgba(ramp('gold', 3), 0.7), 6, function () {
-          VF.ellipse(ctx, cx, cy, rx, 9);
-          ctx.fillStyle = VF.radial(ctx, cx, cy, 10, [[0, ramp('gold', 4)], [0.5, ramp('gold', 3)], [1, ramp('gold', 1)]], cx - 3, cy - 3, 0);
-          ctx.fill();
-        });
-        if (rx > 3) { VF.ellipse(ctx, cx, cy, rx - 2.2, 6.6); ctx.lineWidth = 1; ctx.strokeStyle = rgba(ramp('gold', 4), 0.8); ctx.stroke(); }
-        VF.ellipse(ctx, cx - rx * 0.35, cy - 3, Math.max(0.6, rx * 0.25), 2.4);
-        ctx.fillStyle = rgba(WHITE, 0.75); ctx.fill();
+        var s = pxShape(w, h).ellipse(11, 11, rx, 8.5);
+        if (rx > 3) {
+          pxPaint(ctx, s, { cols: [ramp('gold', 1), ramp('gold', 2), ramp('gold', 3)], outline: ramp('gold', 0), cx: 11, cy: 11, rx: rx, ry: 8.5 });
+          pxRing(ctx, 11, 11, rx - 2.5, 6, ramp('gold', 1));
+          bar(ctx, 8, 6, 2, 1, ramp('gold', 3)); dot(ctx, 7, 7, WHITE);
+        } else {
+          pxPaint(ctx, s, { cols: [ramp('gold', 2)], outline: ramp('gold', 0) });
+          bar(ctx, 10, 4, 1, 14, ramp('gold', 3));
+        }
       };
-    }) });
-    VectorForge.bake(scene, 'heart', { w: 22, h: 20, draw: function (ctx, w, h) {
-      var cx = w / 2; ctx.save(); ctx.translate(cx, 8);
-      ctx.beginPath(); ctx.moveTo(0, 9); ctx.bezierCurveTo(-9, -1, -6, -9, 0, -3); ctx.bezierCurveTo(6, -9, 9, -1, 0, 9); ctx.closePath();
-      ctx.fillStyle = VF.lin(ctx, 0, -8, 0, 9, [[0, ramp('candy', 5)], [1, ramp('candy', 3)]]); ctx.fill();
-      outline(ctx, function () { ctx.beginPath(); ctx.moveTo(0, 9); ctx.bezierCurveTo(-9, -1, -6, -9, 0, -3); ctx.bezierCurveTo(6, -9, 9, -1, 0, 9); ctx.closePath(); }, ramp('candy', 1), 2);
-      VF.ellipse(ctx, -3, -1, 1.6, 2.4); ctx.fillStyle = rgba(WHITE, 0.7); ctx.fill(); ctx.restore();
-    } });
-    VectorForge.bake(scene, 'energy', { w: 20, h: 20, draw: function (ctx, w, h) {
-      var cx = w / 2; VF.glow(ctx, rgba(ramp('cyan', 2), 0.8), 5, function () { VF.circle(ctx, cx, cx, 7); ctx.fillStyle = VF.radial(ctx, cx, cx, 7, [[0, ramp('cyan', 3)], [1, ramp('cyan', 1)]]); ctx.fill(); });
-      ctx.fillStyle = ramp('cyan', 0); VF.poly(ctx, [[cx - 1, cx - 5], [cx + 3, cx - 1], [cx, cx], [cx + 1, cx + 5], [cx - 3, cx + 1], [cx, cx]]); ctx.fill();
-    } });
-    VectorForge.bake(scene, 'chest', { w: 38, h: 32, draw: function (ctx, w, h) {
-      var cx = w / 2;
-      VF.ellipse(ctx, cx, h - 3, 14, 3); ctx.fillStyle = rgba(INK, 0.2); ctx.fill();
-      VF.rr(ctx, 5, 12, w - 10, 16, 3); ctx.fillStyle = VF.lin(ctx, 0, 12, 0, 28, [[0, ramp('wood', 2)], [1, ramp('wood', 1)]]); ctx.fill();
-      outline(ctx, function () { VF.rr(ctx, 5, 12, w - 10, 16, 3); }, ramp('wood', 0), 2);
-      VF.rr(ctx, 4, 6, w - 8, 9, 4); ctx.fillStyle = VF.lin(ctx, 0, 6, 0, 15, [[0, ramp('wood', 3)], [1, ramp('wood', 2)]]); ctx.fill();
-      outline(ctx, function () { VF.rr(ctx, 4, 6, w - 8, 9, 4); }, ramp('wood', 0), 2);
-      VF.rr(ctx, cx - 3, 11, 6, 7, 1.5); ctx.fillStyle = ramp('gold', 3); ctx.fill();
-      outline(ctx, function () { VF.rr(ctx, cx - 3, 11, 6, 7, 1.5); }, ramp('gold', 0), 1.4);
-    } });
-    VectorForge.bake(scene, 'star', { w: 28, h: 28, draw: function (ctx, w, h) {
-      var cx = w / 2; VF.glow(ctx, rgba(ramp('gold', 3), 0.9), 7, function () { VF.star(ctx, cx, cx, 11, 4.6, 5, -Math.PI / 2); ctx.fillStyle = VF.radial(ctx, cx, cx, 11, [[0, ramp('gold', 4)], [0.6, ramp('gold', 3)], [1, ramp('gold', 1)]]); ctx.fill(); });
-      outline(ctx, function () { VF.star(ctx, cx, cx, 11, 4.6, 5, -Math.PI / 2); }, ramp('gold', 0), 1.6);
-    } });
-    VectorForge.bake(scene, 'portal', { w: 70, h: 70, draw: function (ctx, w, h) {
-      var cx = w / 2; VF.glow(ctx, rgba(ramp('portal', 1), 0.9), 12, function () { VF.ellipse(ctx, cx, cx, 26, 30); ctx.fillStyle = VF.radial(ctx, cx, cx, 30, [[0, rgba(ramp('portal', 2), 0.95)], [0.5, rgba(ramp('portal', 1), 0.85)], [1, rgba(ramp('portal', 0), 0.2)]]); ctx.fill(); });
-      ctx.lineWidth = 3; ctx.strokeStyle = rgba(ramp('portal', 2), 0.9); VF.ellipse(ctx, cx, cx, 22, 26); ctx.stroke();
-      VF.ellipse(ctx, cx, cx, 12, 15); ctx.strokeStyle = rgba(WHITE, 0.6); ctx.lineWidth = 2; ctx.stroke();
-    } });
+    }));
 
-    // 보스 3종(왕관 슬라임 / 큰 눈 / 둥근 봇) — 층마다 틴트·스케일·패턴으로 변주
-    VectorForge.bake(scene, 'boss-king', { w: 96, h: 86, frames: [0, 1].map(function (t) { return function (ctx, w, h) {
-      var cx = w / 2, by = h * 0.56, sq = t ? 1.0 : 1.05;
-      VF.ellipse(ctx, cx, h - 5, 34, 6); ctx.fillStyle = rgba(INK, 0.22); ctx.fill();
-      ctx.save(); ctx.translate(cx, by); ctx.scale(1 / sq, sq); ctx.translate(-cx, -by);
-      VF.blob(ctx, cx, by, 36, 12, 0.06, 1.4); ctx.fillStyle = VF.lin(ctx, cx, by - 36, cx, by + 36, [[0, ramp('slime', 4)], [1, ramp('slime', 2)]]); ctx.fill();
-      outline(ctx, function () { VF.blob(ctx, cx, by, 36, 12, 0.06, 1.4); }, ramp('slime', 0), 3); ctx.restore();
-      // 왕관
-      ctx.fillStyle = ramp('gold', 3); VF.poly(ctx, [[cx - 22, by - 30], [cx - 14, by - 44], [cx - 7, by - 32], [cx, by - 48], [cx + 7, by - 32], [cx + 14, by - 44], [cx + 22, by - 30]]); ctx.fill();
-      outline(ctx, function () { VF.poly(ctx, [[cx - 22, by - 30], [cx - 14, by - 44], [cx - 7, by - 32], [cx, by - 48], [cx + 7, by - 32], [cx + 14, by - 44], [cx + 22, by - 30]]); }, ramp('gold', 0), 2);
-      // 눈
-      [[-12, by - 4], [12, by - 4]].forEach(function (e) { VF.circle(ctx, cx + e[0], e[1], 7); ctx.fillStyle = WHITE; ctx.fill(); outline(ctx, function () { VF.circle(ctx, cx + e[0], e[1], 7); }, ramp('slime', 0), 1.6); VF.circle(ctx, cx + e[0] + 1, e[1] + 1, 3.4); ctx.fillStyle = INK; ctx.fill(); });
-      ctx.beginPath(); ctx.arc(cx, by + 8, 8, 0.1 * Math.PI, 0.9 * Math.PI); ctx.lineWidth = 2.4; ctx.strokeStyle = ramp('slime', 0); ctx.stroke();
-    }; }) });
-    VectorForge.bake(scene, 'boss-eye', { w: 90, h: 90, frames: [0, 1].map(function (t) { return function (ctx, w, h) {
-      var cx = w / 2, cy = h / 2, r = t ? 38 : 36;
-      VF.glow(ctx, rgba(ramp('royal', 2), 0.5), 10, function () { VF.circle(ctx, cx, cy, r); ctx.fillStyle = VF.radial(ctx, cx, cy, r, [[0, ramp('royal', 4)], [0.6, ramp('royal', 2)], [1, ramp('royal', 1)]]); ctx.fill(); });
-      outline(ctx, function () { VF.circle(ctx, cx, cy, r); }, ramp('royal', 0), 3);
-      VF.circle(ctx, cx, cy, 18); ctx.fillStyle = WHITE; ctx.fill();
-      VF.circle(ctx, cx, cy, 10); ctx.fillStyle = INK; ctx.fill();
-      VF.circle(ctx, cx - 3, cy - 3, 3.4); ctx.fillStyle = WHITE; ctx.fill();
-    }; }) });
-    VectorForge.bake(scene, 'boss-bot', { w: 92, h: 84, frames: [0, 1].map(function (t) { return function (ctx, w, h) {
-      var cx = w / 2, cy = h / 2 + 2, bob = t ? -2 : 1;
-      VF.ellipse(ctx, cx, h - 5, 30, 5); ctx.fillStyle = rgba(INK, 0.22); ctx.fill();
-      VF.rr(ctx, cx - 34, cy - 28 + bob, 68, 56, 16); ctx.fillStyle = VF.lin(ctx, 0, cy - 28, 0, cy + 28, [[0, ramp('steel', 3)], [1, ramp('steel', 2)]]); ctx.fill();
-      outline(ctx, function () { VF.rr(ctx, cx - 34, cy - 28 + bob, 68, 56, 16); }, ramp('steel', 1), 3);
-      // 눈 패널
-      VF.rr(ctx, cx - 22, cy - 12 + bob, 44, 20, 8); ctx.fillStyle = ramp('steel', 0); ctx.fill();
-      [[-11, cy - 2 + bob], [11, cy - 2 + bob]].forEach(function (e) { VF.circle(ctx, cx + e[0], e[1], 5); ctx.fillStyle = ROLE.ui_accent; ctx.fill(); });
-      VF.rr(ctx, cx - 8, cy + 14 + bob, 16, 5, 2); ctx.fillStyle = ramp('gold', 3); ctx.fill();
-    }; }) });
+    // 하트(체력)
+    bakePx('heart', 22, 20, [function (ctx, w, h) {
+      var s = pxShape(w, h).ellipse(7.5, 8, 4.5, 4).ellipse(14.5, 8, 4.5, 4).poly([[3.5, 9], [18.5, 9], [11, 17]]);
+      pxPaint(ctx, s, { cols: cel('scarlet'), outline: ramp('scarlet', 0), cx: 11, cy: 9.5, rx: 8, ry: 7.5 });
+      bar(ctx, 6, 6, 2, 1, WHITE);
+    }]);
 
-    // 파티클 스파크(작은 흰 원)
+    // 기력(민트 다이아 + 잉크 번개)
+    bakePx('energy', 20, 20, [function (ctx, w, h) {
+      pxPaint(ctx, pxShape(w, h).poly([[10, 2.5], [16.5, 10], [10, 17.5], [3.5, 10]]),
+        { cols: cel('hero'), outline: ramp('hero', 0), cx: 10, cy: 10, rx: 6.5, ry: 7.5 });
+      pxPaint(ctx, pxShape(w, h).poly([[11.5, 5], [8, 11], [10.5, 11], [9, 15.5], [13, 9], [10.5, 9]]), { cols: [INK] });
+    }]);
+
+    // 상자(횃불빛 나무 + 강철 띠 + 골드 자물쇠)
+    bakePx('chest', 38, 32, [function (ctx, w, h) {
+      pxShadow(ctx, w, h, 19, 29, 13, 2.4);
+      pxPaint(ctx, pxShape(w, h).rect(6, 14, 26, 13), { cols: [ramp('torch', 1)], outline: ramp('torch', 0) });
+      bar(ctx, 7, 18, 24, 1, ramp('torch', 0)); bar(ctx, 7, 22, 24, 1, ramp('torch', 0));   // 판자
+      pxPaint(ctx, pxShape(w, h).rect(5, 7, 28, 8), { cols: [ramp('torch', 1)], outline: ramp('torch', 0) });
+      bar(ctx, 6, 8, 26, 1, ramp('torch', 2));                                              // 뚜껑 림라이트
+      bar(ctx, 9, 8, 2, 18, ramp('steel', 1)); bar(ctx, 27, 8, 2, 18, ramp('steel', 1));   // 강철 띠
+      dot(ctx, 9, 8, ramp('steel', 2)); dot(ctx, 27, 8, ramp('steel', 2));
+      pxPaint(ctx, pxShape(w, h).rect(16, 12, 6, 7), { cols: [ramp('gold', 2)], outline: ramp('gold', 0) });
+      dot(ctx, 18, 15, INK); bar(ctx, 18, 16, 1, 2, INK);
+    }]);
+
+    // 스타(아이템 드랍 — 등급 틴트가 잘 먹도록 페일 골드)
+    bakePx('star', 28, 28, [function (ctx, w, h) {
+      var pts = [];
+      for (var i = 0; i < 10; i++) {
+        var rr = i % 2 === 0 ? 11 : 4.8, a = -Math.PI / 2 + i / 10 * Math.PI * 2;
+        pts.push([14 + Math.cos(a) * rr, 14 + Math.sin(a) * rr]);
+      }
+      pxPaint(ctx, pxShape(w, h).poly(pts), { cols: [ramp('gold', 2), ramp('gold', 3), ramp('gold', 3)], outline: ramp('gold', 0), cx: 14, cy: 14, rx: 11, ry: 11 });
+      bar(ctx, 12, 11, 2, 2, WHITE);
+    }]);
+
+    // 포탈(아케인 소용돌이)
+    bakePx('portal', 70, 70, [function (ctx, w, h) {
+      pxPaint(ctx, pxShape(w, h).ellipse(35, 35, 26, 30), { cols: [ramp('arcane', 1)], outline: ramp('arcane', 0) });
+      pxPaint(ctx, pxShape(w, h).ellipse(35, 35, 20, 24), { cols: [ramp('arcane', 2)] });
+      pxPaint(ctx, pxShape(w, h).ellipse(35, 35, 14, 17), { cols: [ramp('arcane', 1)] });
+      pxPaint(ctx, pxShape(w, h).ellipse(35, 35, 9, 11), { cols: [ramp('arcane', 3)] });
+      pxPaint(ctx, pxShape(w, h).ellipse(35, 35, 4, 5), { cols: [WHITE] });
+      var sw = [[35, 8], [50, 16], [58, 35], [50, 54], [35, 61], [20, 54], [12, 35], [20, 16]];
+      for (var i = 0; i < sw.length; i++) dot(ctx, sw[i][0], sw[i][1], i % 2 ? ramp('arcane', 3) : WHITE);
+    }]);
+
+    // 보스 3종(왕관 슬라임 / 큰 눈 / 강철 봇) — 층마다 틴트·패턴으로 변주
+    bakePx('boss-king', 96, 86, [0, 1].map(function (t) { return function (ctx, w, h) {
+      var sq = t ? 1 : 0;
+      pxShadow(ctx, w, h, 48, 80, 32, 5);
+      var body = pxShape(w, h).ellipse(48, 50 + sq, 35 + sq, 27 - sq).rect(14, 52, 68, 18);
+      pxPaint(ctx, body, { cols: cel('venom'), outline: ramp('venom', 0), cx: 48, cy: 50, rx: 35, ry: 27, dither: true });
+      // 왕관 + 보석
+      pxPaint(ctx, pxShape(w, h).poly([[27, 24 + sq], [33, 10 + sq], [40, 21 + sq], [48, 6 + sq], [56, 21 + sq], [63, 10 + sq], [69, 24 + sq], [69, 30 + sq], [27, 30 + sq]]),
+        { cols: [ramp('gold', 2)], outline: ramp('gold', 0) });
+      bar(ctx, 37, 25 + sq, 2, 2, ramp('scarlet', 2)); bar(ctx, 57, 25 + sq, 2, 2, ramp('scarlet', 2));
+      // 눈 + 입
+      pxPaint(ctx, pxShape(w, h).ellipse(37, 46 + sq, 5.5, 6.5), { cols: [WHITE], outline: ramp('venom', 0) });
+      pxPaint(ctx, pxShape(w, h).ellipse(59, 46 + sq, 5.5, 6.5), { cols: [WHITE], outline: ramp('venom', 0) });
+      bar(ctx, 36, 45 + sq, 3, 4, INK); bar(ctx, 58, 45 + sq, 3, 4, INK);
+      dot(ctx, 36, 45 + sq, WHITE); dot(ctx, 58, 45 + sq, WHITE);
+      bar(ctx, 42, 60 + sq, 12, 2, ramp('venom', 0)); dot(ctx, 41, 59 + sq, ramp('venom', 0)); dot(ctx, 54, 59 + sq, ramp('venom', 0));
+      bar(ctx, 28, 52 + sq, 3, 2, ramp('venom', 3)); bar(ctx, 65, 52 + sq, 3, 2, ramp('venom', 3));
+    }; }));
+    bakePx('boss-eye', 90, 90, [0, 1].map(function (t) { return function (ctx, w, h) {
+      var r = t ? 38 : 36;
+      pxPaint(ctx, pxShape(w, h).ellipse(45, 45, r, r), { cols: cel('arcane'), outline: ramp('arcane', 0), cx: 45, cy: 45, rx: r, ry: r, dither: true });
+      pxPaint(ctx, pxShape(w, h).ellipse(45, 45, 17, 17), { cols: [WHITE], outline: ramp('arcane', 0) });
+      pxPaint(ctx, pxShape(w, h).ellipse(45, 45, 9, 9), { cols: [INK] });
+      bar(ctx, 39, 39, 3, 2, WHITE);
+      pxRing(ctx, 45, 45, 26, 26, ramp('arcane', 3));
+    }; }));
+    bakePx('boss-bot', 92, 84, [0, 1].map(function (t) { return function (ctx, w, h) {
+      var bob = t ? -2 : 0;
+      pxShadow(ctx, w, h, 46, 79, 28, 4.5);
+      pxPaint(ctx, pxShape(w, h).poly([[26, 14 + bob], [66, 14 + bob], [80, 28 + bob], [80, 58 + bob], [66, 70 + bob], [26, 70 + bob], [12, 58 + bob], [12, 28 + bob]]),
+        { cols: cel('steel'), outline: ramp('steel', 0), cx: 46, cy: 42 + bob, rx: 34, ry: 28, dither: true });
+      // 안테나 + 경고등
+      bar(ctx, 45, 8 + bob, 2, 6, ramp('steel', 1)); bar(ctx, 44, 6 + bob, 4, 2, ramp('scarlet', 2));
+      // 눈 패널(횃불빛 화로 눈)
+      pxPaint(ctx, pxShape(w, h).rect(26, 34 + bob, 40, 18), { cols: [ramp('steel', 0)], outline: INK });
+      bar(ctx, 32, 40 + bob, 6, 6, ROLE.ui_accent); bar(ctx, 54, 40 + bob, 6, 6, ROLE.ui_accent);
+      dot(ctx, 32, 40 + bob, WHITE); dot(ctx, 54, 40 + bob, WHITE);
+      // 가슴 코어 + 리벳
+      pxPaint(ctx, pxShape(w, h).rect(38, 60 + bob, 16, 5), { cols: [ramp('gold', 2)], outline: ramp('gold', 0) });
+      dot(ctx, 16, 30 + bob, ramp('steel', 3)); dot(ctx, 75, 30 + bob, ramp('steel', 3));
+      dot(ctx, 16, 56 + bob, ramp('steel', 3)); dot(ctx, 75, 56 + bob, ramp('steel', 3));
+    }; }));
+
+    // 벽 횃불(시그니처 드로운 라이트 — 동적 라이팅 아님, 그려진 빛)
+    function drawTorch(ctx, w, h, t) {
+      pxPaint(ctx, pxShape(w, h).ellipse(9, 11, 8, 9), { cols: [rgba(ramp('torch', 3), 0.10)] });   // 헤일로
+      bar(ctx, 8, 20, 2, 8, ramp('steel', 1)); bar(ctx, 8, 27, 2, 1, ramp('steel', 0));            // 브래킷
+      pxPaint(ctx, pxShape(w, h).rect(5, 18, 8, 3), { cols: [ramp('steel', 2)], outline: ramp('steel', 0) });
+      var fl = t ? pxShape(w, h).ellipse(9, 10, 3.5, 6).ellipse(10, 5.5, 1.8, 2.6)
+                 : pxShape(w, h).ellipse(9, 11, 4, 5.5).ellipse(8, 6, 1.8, 2.2);
+      pxPaint(ctx, fl, { cols: [ramp('torch', 1), ramp('torch', 2), ramp('torch', 3)], outline: ramp('torch', 1), cx: 9, cy: 10, rx: 4, ry: 6 });
+      bar(ctx, 8, (t ? 10 : 11), 2, 3, ramp('torch', 4));                                          // 백열 코어
+      dot(ctx, 9, (t ? 8 : 9), ramp('torch', 4));
+      dot(ctx, t ? 13 : 5, 2, ramp('torch', 3));                                                   // 불티
+    }
+    bakePx('wtorch', 18, 30, [function (c, w, h) { drawTorch(c, w, h, 0); }, function (c, w, h) { drawTorch(c, w, h, 1); }]);
+
+    // 파티클 스파크(사각 도트 — 픽셀 매체 정합)
     var g = scene.add.graphics();
-    g.fillStyle(WHITE_INT, 1); g.fillCircle(4, 4, 4);
+    g.fillStyle(WHITE_INT, 1); g.fillRect(1, 1, 6, 6);
     g.generateTexture('spark', 8, 8); g.destroy();
     var g2 = scene.add.graphics();
     g2.fillStyle(WHITE_INT, 1); g2.fillRect(0, 0, 6, 6);
@@ -269,6 +402,7 @@
     mkAnim('boss-eye-idle', 'boss-eye', [0, 1], 2.5);
     mkAnim('boss-bot-idle', 'boss-bot', [0, 1], 3);
     mkAnim('coin-spin', 'coin', [0, 1, 2, 3], 10);
+    mkAnim('torch-burn', 'wtorch', [0, 1], 5);
   }
 
   // ===========================================================================
@@ -318,28 +452,34 @@
     create: function () {
       var W = DESIGN_W, H = DESIGN_H, cx = W / 2;
       this.cameras.main.setBackgroundColor(STYLE.master_palette.background);
-      // 배경 장식 도트
+      // 배경 잉걸 불티(사각 도트)
       var g = this.add.graphics();
-      for (var i = 0; i < 40; i++) { g.fillStyle(WHITE_INT, 0.05 + Math.random() * 0.06); g.fillCircle(Math.random() * W, Math.random() * H, 1 + Math.random() * 2); }
-      // 마스코트
-      var hero = this.add.sprite(cx, H * 0.34, 'hero', 0).setScale(3.4); hero.play('hero-idle');
+      for (var i = 0; i < 36; i++) {
+        var ec = i % 3 === 0 ? rampInt('torch', 2) : (i % 3 === 1 ? rampInt('gold', 2) : rampInt('steel', 2));
+        g.fillStyle(ec, 0.08 + (i % 4) * 0.03);
+        g.fillRect(Math.random() * W, Math.random() * H, 2, 2);
+      }
+      // 벽 횃불 + 마스코트(시그니처 구도: 어둠 속 횃불빛 받은 민트 히어로)
+      var t1 = this.add.sprite(cx - 120, H * 0.33, 'wtorch', 0).setScale(2); t1.play('torch-burn');
+      var t2 = this.add.sprite(cx + 120, H * 0.33, 'wtorch', 1).setScale(2); t2.play({ key: 'torch-burn', startFrame: 1 });
+      var hero = this.add.sprite(cx, H * 0.34, 'hero', 0).setScale(3); hero.play('hero-idle');
       this.tweens.add({ targets: hero, y: H * 0.34 - 12, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.inOut' });
       // 타이틀
       this.add.text(cx, H * 0.5, '팡팡 던전', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '60px', color: ROLE.pickup }).setOrigin(0.5).setShadow(0, 4, ramp('gold', 0), 0, true, true);
       this.add.text(cx, H * 0.5 + 48, 'POP  DUNGEON', { fontFamily: 'monospace', fontSize: '20px', color: ROLE.ui_accent }).setOrigin(0.5);
       // 직업 카드
       var cardY = H * 0.62;
-      var card = this.add.graphics(); card.fillStyle(rampInt('mist', 0), 0.85); card.fillRoundedRect(cx - 150, cardY, 300, 70, 14); card.lineStyle(2, RARITY_COLOR.rare, 0.7); card.strokeRoundedRect(cx - 150, cardY, 300, 70, 14);
-      this.add.text(cx - 120, cardY + 18, '직업', { fontFamily: 'sans-serif', fontSize: '13px', color: ramp('mist', 3) }).setOrigin(0, 0.5);
+      var card = this.add.graphics(); card.fillStyle(rampInt('steel', 0), 0.85); card.fillRect(cx - 150, cardY, 300, 70); card.lineStyle(2, RARITY_COLOR.rare, 0.7); card.strokeRect(cx - 150, cardY, 300, 70);
+      this.add.text(cx - 120, cardY + 18, '직업', { fontFamily: 'sans-serif', fontSize: '13px', color: ramp('steel', 3) }).setOrigin(0, 0.5);
       this.add.text(cx, cardY + 22, '팝거너', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '24px', color: WHITE }).setOrigin(0.5, 0.5);
-      this.add.text(cx, cardY + 50, '자동조준 팝건 · 닷지롤 · 4 스킬', { fontFamily: 'sans-serif', fontSize: '13px', color: ramp('mist', 3) }).setOrigin(0.5);
-      this.add.text(cx + 120, cardY - 6, '더 많은 직업 예정', { fontFamily: 'sans-serif', fontSize: '11px', color: ramp('mist', 2) }).setOrigin(1, 0.5);
+      this.add.text(cx, cardY + 50, '자동조준 팝건 · 닷지롤 · 4 스킬', { fontFamily: 'sans-serif', fontSize: '13px', color: ramp('steel', 3) }).setOrigin(0.5);
+      this.add.text(cx + 120, cardY - 6, '더 많은 직업 예정', { fontFamily: 'sans-serif', fontSize: '11px', color: ramp('steel', 2) }).setOrigin(1, 0.5);
       // 최고 기록
       if (META.bestFloor > 0) this.add.text(cx, H * 0.74, '최고 도달: 지하 ' + META.bestFloor + '층' + (META.wins ? '  ·  클리어 ' + META.wins + '회' : ''), { fontFamily: 'sans-serif', fontSize: '16px', color: ROLE.pickup }).setOrigin(0.5);
       // Tap to start
       var tip = this.add.text(cx, H * 0.84, '탭하여 시작', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '26px', color: WHITE }).setOrigin(0.5);
       this.tweens.add({ targets: tip, alpha: 0.3, duration: 700, yoyo: true, repeat: -1 });
-      this.add.text(cx, H * 0.88, '왼쪽=이동(드래그) · 자동 발사 · 우측 버튼=구르기/스킬', { fontFamily: 'sans-serif', fontSize: '12px', color: ramp('mist', 3) }).setOrigin(0.5);
+      this.add.text(cx, H * 0.88, '왼쪽=이동(드래그) · 자동 발사 · 우측 버튼=구르기/스킬', { fontFamily: 'sans-serif', fontSize: '12px', color: ramp('steel', 3) }).setOrigin(0.5);
 
       var self = this, started = false;
       function start() {
@@ -425,16 +565,47 @@
       window.PopDungeon.scene = this; window.PopDungeon.run = function () { return RUN; };
     },
 
-    // ── 아레나 그리기 ──────────────────────────────────────────────────────────
+    // ── 아레나 그리기(픽셀 브릭 타일 + 횃불 광 풀) ─────────────────────────────
     drawArena: function () {
       var g = this.add.graphics().setDepth(1);
-      // 바닥 그라데이션 느낌(타일 격자)
-      g.fillStyle(rampInt('stone', 0), 1); g.fillRoundedRect(ARENA.x, ARENA.y, ARENA.w, ARENA.h, 16);
-      g.lineStyle(1, rampInt('stone', 1), 0.6);
-      for (var x = ARENA.x + 40; x < ARENA_R; x += 40) g.lineBetween(x, ARENA.y + 6, x, ARENA_B - 6);
-      for (var y = ARENA.y + 40; y < ARENA_B; y += 40) g.lineBetween(ARENA.x + 6, y, ARENA_R - 6, y);
-      g.lineStyle(4, rampInt('stone', 2), 0.9); g.strokeRoundedRect(ARENA.x, ARENA.y, ARENA.w, ARENA.h, 16);
-      g.lineStyle(2, rampInt('stone', 3), 0.5); g.strokeRoundedRect(ARENA.x + 3, ARENA.y + 3, ARENA.w - 6, ARENA.h - 6, 14);
+      // 돌바닥
+      g.fillStyle(rampInt('stone', 0), 1); g.fillRect(ARENA.x, ARENA.y, ARENA.w, ARENA.h);
+      // 브릭 패턴: 가로줄 24px + 줄마다 오프셋된 세로 이음매(1px)
+      g.fillStyle(rampInt('stone', 1), 1);
+      var row = 0, y, x;
+      for (y = ARENA.y + 24; y < ARENA_B - 4; y += 24, row++) {
+        g.fillRect(ARENA.x + 4, y, ARENA.w - 8, 1);
+        var off = (row % 2) * 24;
+        for (x = ARENA.x + 24 + off; x < ARENA_R - 6; x += 48) g.fillRect(x, y - 24 < ARENA.y ? ARENA.y + 4 : y - 24, 1, 24);
+      }
+      // 바닥 잔돌·이끼 점(결정적 배치)
+      for (var i = 0; i < 14; i++) {
+        var dx = ARENA.x + 20 + ((i * 97) % (ARENA.w - 40));
+        var dy = ARENA.y + 24 + ((i * 211) % (ARENA.h - 48));
+        g.fillStyle(i % 4 === 0 ? rampInt('venom', 1) : rampInt('stone', 2), i % 4 === 0 ? 0.5 : 0.7);
+        g.fillRect(dx, dy, 2, i % 3 === 0 ? 1 : 2);
+      }
+      // 벽 프레임(사각 도트 결): 3px 외벽 + 1px 상단 림라이트
+      g.fillStyle(rampInt('stone', 2), 1);
+      g.fillRect(ARENA.x, ARENA.y, ARENA.w, 3); g.fillRect(ARENA.x, ARENA_B - 3, ARENA.w, 3);
+      g.fillRect(ARENA.x, ARENA.y, 3, ARENA.h); g.fillRect(ARENA_R - 3, ARENA.y, 3, ARENA.h);
+      g.fillStyle(rampInt('stone', 3), 1);
+      g.fillRect(ARENA.x, ARENA.y, ARENA.w, 1);
+      // 모서리 초석
+      g.fillStyle(rampInt('stone', 3), 1);
+      g.fillRect(ARENA.x, ARENA.y, 6, 6); g.fillRect(ARENA_R - 6, ARENA.y, 6, 6);
+      g.fillRect(ARENA.x, ARENA_B - 6, 6, 6); g.fillRect(ARENA_R - 6, ARENA_B - 6, 6, 6);
+      // 벽 횃불 + 바닥의 따뜻한 광 풀(그려진 빛 — T2, 동적 라이팅 아님)
+      var spots = [
+        [ARENA.x + 52, ARENA.y + 20], [ARENA_R - 52, ARENA.y + 20],
+        [ARENA.x + 16, ARENA.y + ARENA.h * 0.46], [ARENA_R - 16, ARENA.y + ARENA.h * 0.46]
+      ];
+      for (var s = 0; s < spots.length; s++) {
+        g.fillStyle(rampInt('torch', 2), 0.06);
+        g.fillEllipse(spots[s][0], spots[s][1] + 26, 96, 56);
+        var tc = this.add.sprite(spots[s][0], spots[s][1], 'wtorch', s % 2).setDepth(2);
+        tc.play({ key: 'torch-burn', startFrame: s % 2 });
+      }
     },
 
     // ── 층 시작 ────────────────────────────────────────────────────────────────
@@ -455,7 +626,7 @@
         if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('boss');
         if (GAME_AUDIO.setIntensity) GAME_AUDIO.setIntensity(1);
         if (GAME_AUDIO.sfx) GAME_AUDIO.sfx('bossWarn');
-        this.bannerShow('지하 ' + n + '층 — 보스!', rampInt('candy', 4));
+        this.bannerShow('지하 ' + n + '층 — 보스!', rampInt('scarlet', 3));
         this.time.delayedCall(700, function () { self.spawnBoss(n); self.state = 'play'; });
       } else {
         if (GAME_AUDIO.setSection) GAME_AUDIO.setSection('combat');
@@ -732,7 +903,7 @@
 
     spawnPBullet: function (x, y, ang, s, isSplit) {
       var b = this.pbullets.get(x, y); if (!b) return null;
-      b.setActive(true).setVisible(true).setDepth(18).setBlendMode(Phaser.BlendModes.ADD);
+      b.setActive(true).setVisible(true).setDepth(18);
       if (b.body) { b.body.enable = true; b.body.reset(x, y); b.body.setCircle(5, 2, 2); }
       var size = 1 + (s.bulletSize || 0) * (isSplit ? 0.4 : 1);
       b.setScale(size);
@@ -1168,9 +1339,9 @@
 
       // 버튼 정의(우측 하단 엄지 영역) — dodge 가 가장 크고 손에 가깝다
       this.buttons = [
-        { id: 'dodge', x: W - 64, y: H - 70, r: 40, label: '↻', color: rampInt('hero', 3), ability: 'dodge_roll' },
+        { id: 'dodge', x: W - 64, y: H - 70, r: 40, label: '↻', color: rampInt('hero', 2), ability: 'dodge_roll' },
         { id: 'skill1', x: W - 142, y: H - 92, r: 28, label: '✦', color: rampInt('gold', 2), ability: 'pop_nova' },
-        { id: 'skill2', x: W - 150, y: H - 158, r: 26, label: '▲', color: rampInt('cyan', 2), ability: 'turbo_pop' },
+        { id: 'skill2', x: W - 150, y: H - 158, r: 26, label: '▲', color: rampInt('torch', 2), ability: 'turbo_pop' },
         { id: 'ult', x: W - 78, y: H - 156, r: 26, label: '◆', color: roleInt('pickup'), ability: 'golden_storm' }
       ];
 
@@ -1186,7 +1357,7 @@
       this.floorText = this.add.text(W / 2, 28, '', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '26px', color: WHITE }).setOrigin(0.5).setDepth(1001).setShadow(0, 2, INK, 3);
       this.coinText = this.add.text(W - 16, 22, '', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '18px', color: ROLE.pickup }).setOrigin(1, 0.5).setDepth(1001);
       this.hudG = this.add.graphics().setDepth(1000);
-      this.itemText = this.add.text(16, 116, '', { fontFamily: 'sans-serif', fontSize: '12px', color: ramp('mist', 4), wordWrap: { width: 250 } }).setDepth(1001);
+      this.itemText = this.add.text(16, 116, '', { fontFamily: 'sans-serif', fontSize: '12px', color: ramp('steel', 3), wordWrap: { width: 250 } }).setDepth(1001);
       this.bossNameText = this.add.text(W / 2, 96, '', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '15px', color: ROLE.enemy }).setOrigin(0.5).setDepth(1001);
 
       this.prevPressed = {};
@@ -1261,24 +1432,24 @@
       var hx0 = 16, hy = 22;
       for (var i = 0; i < RUN.maxHp; i++) {
         var filled = i < RUN.hp;
-        g.fillStyle(filled ? roleInt('danger') : rampInt('mist', 1), filled ? 1 : 0.7);
+        g.fillStyle(filled ? roleInt('danger') : rampInt('steel', 1), filled ? 1 : 0.7);
         // 하트 모양 근사(두 원 + 삼각)
         var cx = hx0 + i * 22 + 8, cy = hy;
         g.fillCircle(cx - 4, cy - 2, 4.4); g.fillCircle(cx + 4, cy - 2, 4.4);
         g.fillTriangle(cx - 8, cy, cx + 8, cy, cx, cy + 9);
       }
-      // 기력 바
+      // 기력 바(사각 도트 결)
       var ex = 16, ey = 44, ew = 120, eh = 8;
       var er = kit ? kit.getResource('energy') / kit.getResourceMax('energy') : 0;
-      g.fillStyle(rampInt('steel', 0), 0.9); g.fillRoundedRect(ex, ey, ew, eh, 4);
-      g.fillStyle(rampInt('cyan', 2), 0.95); g.fillRoundedRect(ex, ey, Math.max(0, ew * er), eh, 4);
-      g.lineStyle(1, rampInt('cyan', 2), 0.6); g.strokeRoundedRect(ex, ey, ew, eh, 4);
+      g.fillStyle(rampInt('steel', 0), 0.9); g.fillRect(ex, ey, ew, eh);
+      g.fillStyle(rampInt('hero', 2), 0.95); g.fillRect(ex, ey, Math.max(0, ew * er), eh);
+      g.lineStyle(1, rampInt('hero', 2), 0.6); g.strokeRect(ex, ey, ew, eh);
       // 보스 HP 바
       if (RUN.boss) {
         var bw = DESIGN_W - 120, bx = 60, by = 78;
-        g.fillStyle(rampInt('candy', 0), 0.9); g.fillRoundedRect(bx, by, bw, 12, 6);
-        g.fillStyle(roleInt('danger'), 0.95); g.fillRoundedRect(bx, by, Math.max(0, bw * RUN.bossHpFrac), 12, 6);
-        g.lineStyle(2, rampInt('candy', 5), 0.7); g.strokeRoundedRect(bx, by, bw, 12, 6);
+        g.fillStyle(rampInt('scarlet', 0), 0.9); g.fillRect(bx, by, bw, 12);
+        g.fillStyle(roleInt('danger'), 0.95); g.fillRect(bx, by, Math.max(0, bw * RUN.bossHpFrac), 12);
+        g.lineStyle(2, rampInt('scarlet', 3), 0.7); g.strokeRect(bx, by, bw, 12);
       }
     },
 
@@ -1303,11 +1474,11 @@
       var W = DESIGN_W, H = DESIGN_H, cx = W / 2;
       var win = data && data.win;
       this.cameras.main.setBackgroundColor(win ? FLOOR_BG[2] : FLOOR_BG[3]);
-      this.add.text(cx, H * 0.28, win ? '클리어!' : '게임 오버', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '52px', color: win ? ROLE.ui_accent : ramp('candy', 4) }).setOrigin(0.5).setShadow(0, 4, INK, 4);
+      this.add.text(cx, H * 0.28, win ? '클리어!' : '게임 오버', { fontFamily: 'sans-serif', fontStyle: 'bold', fontSize: '52px', color: win ? ROLE.ui_accent : ramp('scarlet', 2) }).setOrigin(0.5).setShadow(0, 4, INK, 4);
       if (win) this.add.text(cx, H * 0.28 + 50, '지하 100층 돌파! 팝거너의 전설', { fontFamily: 'sans-serif', fontSize: '16px', color: ROLE.pickup }).setOrigin(0.5);
 
       var hero = this.add.sprite(cx, H * 0.46, 'hero', 0).setScale(3); hero.play('hero-idle');
-      if (!win) hero.setTint(rampInt('mist', 3)).setAngle(180);
+      if (!win) hero.setTint(rampInt('steel', 2)).setAngle(180);
 
       var lines = [
         '도달: 지하 ' + (data ? data.floor : 1) + '층',
@@ -1399,7 +1570,7 @@
     type: Phaser.AUTO,
     parent: 'game',
     backgroundColor: STYLE.master_palette.background,
-    // 렌더 설정은 style.json render 블록을 미러(D7: medium=vector ↔ pixelArt:false)
+    // 렌더 설정은 style.json render 블록을 미러(D7: medium ↔ render 정합 — StyleKit.renderConfig)
     render: Object.assign(StyleKit.renderConfig(STYLE), { preserveDrawingBuffer: /[?&]capture=1/.test(location.search) }),
     scale: Object.assign({ parent: 'game' }, MobileHarness.scaleConfig(DESIGN_W, DESIGN_H)),
     physics: { default: 'arcade', arcade: { gravity: { x: 0, y: 0 }, debug: /[?&]debug=1/.test(location.search) } },

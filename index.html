@@ -6,8 +6,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#161a2e">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='17' r='11' fill='%2333d2bd'/%3E%3Ccircle cx='12' cy='15' r='2.4' fill='%23fff'/%3E%3Ccircle cx='20' cy='15' r='2.4' fill='%23fff'/%3E%3C/svg%3E">
+<meta name="theme-color" content="#10131f">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='6' y='8' width='20' height='18' fill='%233fd6a8'/%3E%3Crect x='10' y='13' width='4' height='5' fill='%23fff'/%3E%3Crect x='18' y='13' width='4' height='5' fill='%23fff'/%3E%3Crect x='12' y='15' width='2' height='2' fill='%2315121f'/%3E%3Crect x='20' y='15' width='2' height='2' fill='%2315121f'/%3E%3C/svg%3E">
 <title>팡팡 던전 · Pop Dungeon</title>
 <style>
   /* 모바일 웹뷰 CSS 리셋 (러버밴드/스크롤/탭하이라이트/롱프레스 메뉴 차단) */
@@ -16,7 +16,7 @@
     width: 100%; height: 100%;
     overflow: hidden;
     position: fixed; inset: 0;
-    background: #0c0a18;
+    background: #10131f;
     overscroll-behavior: none;
     -webkit-user-select: none; user-select: none;
     -webkit-tap-highlight-color: transparent;
@@ -24,14 +24,15 @@
     touch-action: none;
   }
   #game { width: 100%; height: 100dvh; height: 100svh; }
-  /* 스무스/벡터(카툰) 스타일 → 안티앨리어싱 유지(픽셀화 금지) */
-  #game canvas { display: block; touch-action: none; image-rendering: auto; }
+  /* 픽셀(도트) 스타일 → CSS 업스케일도 또렷한 픽셀로(블러 금지) */
+  #game canvas { display: block; touch-action: none; image-rendering: pixelated; }
 </style>
 </head>
 <body>
 <div id="game"></div>
 <!-- vendored Phaser 4.1.0 (MIT) + 엔진 라이브러리(전부 로컬, 오프라인 동작) -->
 <script src="engine/phaser.min.js"></script>
+<!-- VectorForge 는 캔버스→텍스처 베이크 플럼빙(ss:1)으로만 사용 — 드로잉은 game.js PX 도트 래스터 -->
 <script src="engine/vectorforge.js"></script>
 <!-- 스타일 단일 진실 어댑터(style-architect): data.js POP_STYLE → 팔레트/역할색 조회 -->
 <script src="engine/stylekit.js"></script>
