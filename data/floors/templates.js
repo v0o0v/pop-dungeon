@@ -258,13 +258,20 @@
   };
 
   // ── ASCII grid → 런타임 변환 계약(L6a 어댑터용 — 스파이크 game/room.js 정합) ──
-  // 스파이크 Room.tiles 는 정수 배열(0=바닥, 1=벽)이고 문은 link 시 벽 한 칸을 뚫는다.
-  // 핸드 디자인 floors 의 ASCII grid 를 그 런타임 표현으로 옮기는 표준 변환:
-  //   gridToTiles(grid) → { tiles, spawns, doors, markers }
-  //     tiles[r][c]: WALL_CHARS('#','P') → 1(콜라이더), 그 외 walkable → 0(바닥), ' ' → 1(외부=벽 취급)
-  //     doors:   'D' 셀 위치 [{r,c,dir}] — dir 은 가장자리 기준(N=상,S=하,W=좌,E=우)
-  //     spawns:  'E' 셀 위치(grid 힌트) — room.spawns[] 데이터와 보완
-  //     markers: 'S'(시작) 'X'(출구) 'T'(보물) 위치
+  // 스파이크 Room.tiles 는 정수 배열(0=바닥, 1=벽)이고 staticGroup 은 tile==1 셀만
+  // 콜라이더로 베이크한다(문자 아님 — worker-spike 확인). 본 grid 는 외벽 '#'을 *명시
+  // 포함*하므로(모든 템플릿 테두리 '#') L6a 는 grid 를 그대로 0/1 로 변환하면 된다.
+  //   gridToTiles(grid) → { tiles, spawns, doors, markers, cols, rows }
+  //     tiles[r][c]: WALL_CHARS('#','P') → 1(콜라이더), walkable('.'/'D'/'S'/'E'/'X'/'T') → 0,
+  //                  ' '(외부) → 1 — 비직사각형 방에서 "방 밖"으로 플레이어/탄 누출을 막는
+  //                  콜라이더. 직사각형 방엔 공백이 없으므로 무영향(worker-spike: 0/1 무방).
+  //     doors:   'D' 셀 [{r,c,dir}] — dir 은 가장자리 위치로 추론(up/down/left/right).
+  //              스파이크 doorTile(dir)은 변 중앙을 뚫지만, 여기선 실제 'D' 좌표를 주므로
+  //              L6a 는 그 좌표를 뚫으면 된다(가운데 가정 불필요 — worker-spike 핸드오프).
+  //     spawns:  'E' 셀(grid 힌트) — room.spawns[]{type,count} 가 권위, 'E'는 위치 보완.
+  //     markers: 'S'(시작) 'X'(출구) 'T'(보물) 위치.
+  //   room.bounds 산출(L6a 소관): outer rect(cols*TILE × rows*TILE)에서 외벽을 뺀 안쪽 =
+  //     walkable 셀들의 bounding box. 외벽 두께가 방마다 자유(고정 1타일 가정 안 함).
   // 이 함수는 데이터(순수 변환)라 런타임·lint·QA 어디서나 동일 결과(결정적).
   FLOOR_TEMPLATES.gridToTiles = function (grid) {
     var H = grid.length, W = grid[0].length;

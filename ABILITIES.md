@@ -110,7 +110,10 @@
   - `resolveLoadout(save)` : SAVE.skills.loadout → `{ skill1, skill2, ult }` 능력 id(미설정 시 학습된 풀에서 기본값).
   - `applyAbilityEffect(scene, ab, ctx)` : `ab.id` 별 효과 dispatch 헬퍼(노바·산탄·응축·터보·점멸·돌진·보호막·정화·궁극2). 씬이 onActivate 에서 호출.
   - `onKillStarlight(kit, amount)` : 처치 시 별빛 충전(`starlightOnKill` 합산값 반영).
-  - `attachWiring(scene, kit, save)` : AbilityKit `attach` 후 로드아웃·콜백을 연결하는 단일 진입점(Dungeon 씬 L6 가 사용).
+  - `attachWiring(scene, save)` : AbilityKit `attach` 후 로드아웃·콜백을 연결하는 단일 진입점(Dungeon 씬 L6 가 사용).
+  - `getPassiveEffects(learnedNodes)` : recomputeStats 소스[4] 입력 계약(worker-l4). **stats.js 가 인식하는 키만** 정규화해 `[{effect}]` 반환.
+  - `critFromPassives(learnedNodes)` · `starlightPerKill(learnedNodes)` : 보조 경로(아래 참조).
+- **크리·별빛 키 처리(worker-l4 Q2 확정):** `critChance`·`critBonusDamage`·`starlightOnKill` 은 stats.js applyEffect 가 인식하지 않으므로 **`getPassiveEffects` 의 stat 스트림에서 제외**한다(계약 클린 — 금지 키 누출 0). 대신 트리 크리는 `critFromPassives`(씬/HUD 가 RUN.stats.crit* 에 가산), 별빛 충전은 `starlightPerKill`/`onKillStarlight`(처치 시 starlight 자원 충전) **전용 보조 경로**로 흐른다. 코어 패시브(pop_mastery·eagle_eye)는 stats.js BASE 에 반영돼 stat 스트림 제외(이중계산 방지).
 - **AbilityKit 재사용**: `learn`/`addPoints`(스킬포인트 배분) · `serialize`/`restore`(SAVE.skills 영속) · 충전·쿨다운·콤보 — **엔진 수정 0**, 데이터+배선만.
 
 ## §10 밸런스 점검 로그 (작성과 분리)
