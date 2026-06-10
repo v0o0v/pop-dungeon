@@ -1,0 +1,105 @@
+/* ============================================================================
+ * 팡팡 던전 — 퀘스트 데이터 (story-architect 계약 · STORY.md §14 단일 진실)
+ * ----------------------------------------------------------------------------
+ * NPC별 사이드 퀘스트(2~3개). 목표 타입: kill / collect / reach.
+ * 보상: 골드·장비·스토리 조각(NPC 내면 한 줄 — 메인 반전 절대 누설 안 함).
+ * 퀘스트는 마을 NPC의 Want/Ghost/Need 를 드러내 인물을 입체화한다(§11.2 아크 정합).
+ *
+ * 보상 통화 정합(L2·L4 계약): gold/statPoint/skillPoint=영속(SaveStore),
+ * equipment=인벤토리 영속, consumable=다음 런 휘발, passive=영속 패시브.
+ * unlock 은 NPC stage(§11.3)에 게이트.
+ *
+ * 브라우저: window.POP_QUESTS 전역. Node: module.exports.QUESTS.
+ * ==========================================================================*/
+(function (g) {
+  'use strict';
+
+  var QUESTS = {
+    "version": 1,
+    "meta": {
+      "slug": "pop-dungeon",
+      "originalityNote": "전 퀘스트·대사 오리지널(STORY §14). 상용 IP 미사용.",
+      "storyRef": "STORY.md §14 (사이드 퀘스트 서사)",
+      "objectiveTypes": ["kill", "collect", "reach"],
+      "rewardTypes": ["gold", "equipment", "consumable", "statPoint", "skillPoint", "passive", "material", "blueprint"],
+      "twistProtection": "어느 퀘스트도 별이의 진실(제 발로 갔다)을 명시하지 않는다. 결정타는 91층 막간·승리 카드(§7) 단일 채널."
+    },
+    "quests": [
+      {
+        "id": "q_elder_fill", "npc": "elder", "unlockStage": "stage_0", "title": "협곡을 막은 것",
+        "objective": { "type": "kill", "target": "boss_canyonblock", "region": "region-02", "count": 1 },
+        "reward": [{ "type": "gold", "amount": 50 }, { "type": "equipment", "rarity": "common" }],
+        "storyFragment": "거봐, 깊은 덴 위험혀… (작게) …근데 니가 자꾸 돌아오니께 영 메우란 말이 안 나오네."
+      },
+      {
+        "id": "q_elder_proof", "npc": "elder", "unlockStage": "stage_1", "title": "노인네 헛소리",
+        "objective": { "type": "reach", "target": "region-05", "count": 1 },
+        "reward": [{ "type": "gold", "amount": 120 }, { "type": "material", "id": "star_iron", "amount": 3 }],
+        "storyFragment": "별지도라고? …그 노인네 헛소리가 아니었단 말여?"
+      },
+      {
+        "id": "q_shop_supply", "npc": "shopkeeper", "unlockStage": "stage_0", "title": "장사 밑천",
+        "objective": { "type": "collect", "target": "coin", "count": 60 },
+        "reward": [{ "type": "passive", "id": "shop_discount", "value": 0.1 }],
+        "storyFragment": "장사 도와줬으니 단골값 해주지. …그 집 애 소식은… 아직 없네."
+      },
+      {
+        "id": "q_shop_rare", "npc": "shopkeeper", "unlockStage": "stage_1", "title": "희귀한 물건",
+        "objective": { "type": "collect", "target": "rarity:rare+", "count": 3 },
+        "reward": [{ "type": "equipment", "rarity": "epic" }],
+        "storyFragment": "이런 걸 어디서… 깊은 데서 났구먼. 손해 보는 줄 알았는데 니 덕에 가게가 다 떴어."
+      },
+      {
+        "id": "q_twins_sight", "npc": "twins", "unlockStage": "stage_1", "title": "우는 그림자",
+        "objective": { "type": "kill", "target": "enemy:weeping", "region": "region-07", "count": 10 },
+        "reward": [{ "type": "passive", "id": "codex_bonus", "value": 1 }, { "type": "gold", "amount": 40 }],
+        "storyFragment": "운다고?! 진짜?! ……우리가 놀린 그 집 애도… 울었을까."
+      },
+      {
+        "id": "q_twins_proof", "npc": "twins", "unlockStage": "stage_2", "title": "켜진 횃불",
+        "objective": { "type": "reach", "target": "region-08", "count": 1 },
+        "reward": [{ "type": "gold", "amount": 90 }],
+        "storyFragment": "횃불이 켜져 있었다고?! 누가?! ……우린 안 무서워! (작게) 무서워."
+      },
+      {
+        "id": "q_star_lore", "npc": "stargazer", "unlockStage": "stage_0", "title": "곧은 발자국",
+        "objective": { "type": "reach", "target": "region-03", "count": 1 },
+        "reward": [{ "type": "skillPoint", "amount": 1 }],
+        "storyFragment": "발자국이 곧다고 했지. …도망친 아이의 걸음이 아니야. 너도 눈치챘구나."
+      },
+      {
+        "id": "q_star_listen", "npc": "stargazer", "unlockStage": "stage_2", "title": "작아지는 소리",
+        "objective": { "type": "reach", "target": "region-06", "count": 1 },
+        "reward": [{ "type": "skillPoint", "amount": 2 }],
+        "storyFragment": "소리가 작아진다… 그 애가 늘 하던 말이야. 별이 아프다고. 아무도 안 믿었지. 나만 빼고."
+      },
+      {
+        "id": "q_merchant_taste", "npc": "merchant", "unlockStage": "stage_0", "title": "별엿 단골",
+        "objective": { "type": "collect", "target": "gold:spent", "count": 200 },
+        "reward": [{ "type": "statPoint", "amount": 1 }, { "type": "consumable", "id": "star_candy" }],
+        "storyFragment": "꼬마 손님 단골 됐네. 나도 떠돌다 정든 곳마다 떠났는디… 여긴 좀 다르단 말이지."
+      },
+      {
+        "id": "q_merchant_stay", "npc": "merchant", "unlockStage": "stage_2", "title": "눌러앉을까",
+        "objective": { "type": "reach", "target": "region-09", "count": 1 },
+        "reward": [{ "type": "statPoint", "amount": 2 }],
+        "storyFragment": "곧 끝이 보이네, 꼬마야. 니가 그 애 데려오면… 나 여기 눌러앉을까 봐."
+      },
+      {
+        "id": "q_smith_temper", "npc": "blacksmith", "unlockStage": "stage_0", "title": "구멍 쇠",
+        "objective": { "type": "kill", "target": "boss_knotcore", "region": "region-04", "count": 1 },
+        "reward": [{ "type": "passive", "id": "forge_discount", "value": 0.15 }],
+        "storyFragment": "구멍 쇠로 벼린 거 잘 들지? …다들 구멍을 미워하는디, 난 거기서 제일 단단한 게 나온다고 생각혀."
+      },
+      {
+        "id": "q_smith_trust", "npc": "blacksmith", "unlockStage": "stage_2", "title": "단단해진 만큼",
+        "objective": { "type": "collect", "target": "enhance:+5", "count": 1 },
+        "reward": [{ "type": "blueprint", "id": "legendary_temper" }],
+        "storyFragment": "탕! …이만큼 단단해졌으면 됐다. 꼬맹이, 살아 돌아오는 게 강화값이라 했지. …사람도 쇠처럼 믿어볼까."
+      }
+    ]
+  };
+
+  g.POP_QUESTS = QUESTS;
+  if (typeof module !== 'undefined' && module.exports) module.exports = { QUESTS: QUESTS };
+})(typeof window !== 'undefined' ? window : globalThis);

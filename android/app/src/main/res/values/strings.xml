@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">팡팡 던전</string>
+    <string name="title_activity_main">팡팡 던전</string>
+    <string name="package_name">com.v0o0v.popdungeon</string>
+    <string name="custom_url_scheme">com.v0o0v.popdungeon</string>
+</resources>

@@ -17,7 +17,11 @@
 ■ 에셋 (그래픽 · 사운드)
   - 모든 캐릭터/적/보스/탄알/아이템/이펙트 스프라이트 : VectorForge 로 코드 생성 (절차적, CC0)
   - 모든 BGM/효과음 : SoundForge(Tone.js) 로 스케일·진행에서 절차 합성 (오리지널, CC0)
-  - 오디오 파일 0개 · 외부 이미지 0개 (전부 코드 생성)
+  - 게임 소스 트리 내 오디오 파일 0개 · 외부 이미지 0개 (전부 코드 생성)
+  - 예외) android/app/src/main/res/ 의 splash.png · ic_launcher*.png(총 26개) :
+    Capacitor(@capacitor/android, MIT)가 `npx cap add android` 시 복사한 기본 템플릿
+    플레이스홀더 리소스(흰 배경 스플래시 + Capacitor 로고 아이콘)일 뿐, 어떤 상용 IP도 아님.
+    실배포 전 자체 디자인 아이콘/스플래시로 교체 예정.
 
 ■ IP 안전 (저작권/상표)
   - 엔터더건전(Enter the Gungeon) 등 어떤 상용 게임의 스프라이트·사운드·폰트·고유명도

@@ -1,41 +1,173 @@
 {
-  "version": 1,
+  "version": 2,
   "meta": {
     "slug": "pop-dungeon",
     "tier": 3,
-    "mood": "cheerful",
-    "genre": "roguelike-shooter",
+    "mood": "warm",
+    "genre": "roguelike-bullet-hell",
     "renderStyle": "smooth",
     "engine": "soundforge",
-    "originalityNote": "전 트랙·SFX 절차 합성 오리지널 — 어떤 곡의 멜로디/진행도 인용하지 않음(스케일+진행에서 절차 생성). 100% CC0."
+    "coreVerb": "내려가기·피하기·쏘기·줍기",
+    "storyRef": "STORY.md §1(톤 warm wonder)·§12(10지역 바이옴 온도 곡선)·§13(막간↔지역)",
+    "originalityNote": "전 트랙·SFX 절차 합성 오리지널 — 어떤 곡의 멜로디/진행도 인용하지 않음(스케일+코드 도수만 지정, 멜로디는 엔진 arp 절차 생성). 고유명(팝거너·별빛·악몽 조각)은 STORY.md Glossary 정합. 100% CC0."
   },
   "master": {
-    "volume": -7,
+    "volume": -8,
     "limiter": -1,
     "reverb": {
-      "decay": 2,
-      "send": 0.16
+      "decay": 2.2,
+      "send": 0.18
     },
     "delay": {
-      "send": 0.1
+      "send": 0.11
     }
   },
   "budget": {
     "maxVoices": 16
   },
   "bgm": {
-    "defaultTrack": "explore",
+    "defaultTrack": "title",
     "defaultIntensity": 0.4,
     "tracks": {
-      "explore": {
-        "mood": "cheerful",
-        "scale": "major-pentatonic",
+      "title": {
+        "mood": "calm",
+        "scale": "lydian",
         "key": "C",
-        "bpm": 124,
+        "bpm": 76,
+        "progression": [
+          "I",
+          "II",
+          "vi",
+          "IV"
+        ],
+        "layers": [
+          {
+            "id": "pad",
+            "preset": "pad",
+            "pattern": "chords",
+            "minIntensity": 0,
+            "vol": -13,
+            "role": "bed"
+          },
+          {
+            "id": "keys",
+            "preset": "fm-ep",
+            "pattern": "offbeat",
+            "minIntensity": 0.3,
+            "vol": -16,
+            "role": "warmth"
+          },
+          {
+            "id": "glint",
+            "preset": "pluck",
+            "pattern": "arp",
+            "minIntensity": 0.55,
+            "vol": -15,
+            "role": "starlight"
+          }
+        ]
+      },
+      "village": {
+        "mood": "warm",
+        "scale": "major",
+        "key": "F",
+        "bpm": 96,
+        "progression": [
+          "I",
+          "V",
+          "vi",
+          "IV"
+        ],
+        "layers": [
+          {
+            "id": "pad",
+            "preset": "pad",
+            "pattern": "chords",
+            "minIntensity": 0,
+            "vol": -14,
+            "role": "bed"
+          },
+          {
+            "id": "bass",
+            "preset": "saw-bass",
+            "pattern": "root8",
+            "minIntensity": 0.25,
+            "vol": -13,
+            "role": "foundation"
+          },
+          {
+            "id": "keys",
+            "preset": "fm-ep",
+            "pattern": "offbeat",
+            "minIntensity": 0.4,
+            "vol": -15,
+            "role": "warmth"
+          },
+          {
+            "id": "lead",
+            "preset": "pluck",
+            "pattern": "arp",
+            "minIntensity": 0.65,
+            "vol": -16,
+            "role": "melody"
+          }
+        ]
+      },
+      "explore_cold": {
+        "mood": "calm",
+        "scale": "minor-pentatonic",
+        "key": "A",
+        "bpm": 84,
         "progression": [
           "i",
           "VI",
+          "III",
+          "VII"
+        ],
+        "layers": [
+          {
+            "id": "pad",
+            "preset": "pad",
+            "pattern": "chords",
+            "minIntensity": 0,
+            "vol": -14,
+            "role": "bed"
+          },
+          {
+            "id": "bass",
+            "preset": "triangle-bass",
+            "pattern": "root8",
+            "minIntensity": 0.3,
+            "vol": -13,
+            "role": "foundation"
+          },
+          {
+            "id": "drums",
+            "preset": "kit",
+            "pattern": "backbeat",
+            "minIntensity": 0.5,
+            "vol": -13,
+            "role": "drive"
+          },
+          {
+            "id": "lead",
+            "preset": "pluck",
+            "pattern": "arp",
+            "minIntensity": 0.72,
+            "vol": -15,
+            "role": "melody"
+          }
+        ]
+      },
+      "explore_warm": {
+        "mood": "warm",
+        "scale": "major",
+        "key": "G",
+        "bpm": 100,
+        "progression": [
+          "I",
           "IV",
+          "vi",
           "V"
         ],
         "layers": [
@@ -44,41 +176,45 @@
             "preset": "pad",
             "pattern": "chords",
             "minIntensity": 0,
-            "vol": -15
+            "vol": -14,
+            "role": "bed"
           },
           {
             "id": "bass",
-            "preset": "triangle-bass",
+            "preset": "saw-bass",
             "pattern": "root8",
-            "minIntensity": 0.25,
-            "vol": -12
+            "minIntensity": 0.3,
+            "vol": -12,
+            "role": "foundation"
           },
           {
             "id": "drums",
             "preset": "kit",
             "pattern": "backbeat",
-            "minIntensity": 0.45,
-            "vol": -12
+            "minIntensity": 0.5,
+            "vol": -12,
+            "role": "drive"
           },
           {
-            "id": "lead",
-            "preset": "pluck",
+            "id": "keys",
+            "preset": "fm-ep",
             "pattern": "arp",
             "minIntensity": 0.7,
-            "vol": -14
+            "vol": -15,
+            "role": "warmth"
           }
         ]
       },
-      "combat": {
-        "mood": "heroic",
-        "scale": "mixolydian",
-        "key": "C",
-        "bpm": 132,
+      "explore_mystic": {
+        "mood": "mystic",
+        "scale": "lydian",
+        "key": "D",
+        "bpm": 88,
         "progression": [
-          "i",
-          "VII",
-          "IV",
-          "i"
+          "I",
+          "II",
+          "vi",
+          "iii"
         ],
         "layers": [
           {
@@ -86,28 +222,78 @@
             "preset": "pad",
             "pattern": "chords",
             "minIntensity": 0,
-            "vol": -16
+            "vol": -13,
+            "role": "bed"
           },
           {
             "id": "bass",
             "preset": "triangle-bass",
             "pattern": "root8",
+            "minIntensity": 0.32,
+            "vol": -14,
+            "role": "foundation"
+          },
+          {
+            "id": "bell",
+            "preset": "fm-bell",
+            "pattern": "offbeat",
+            "minIntensity": 0.55,
+            "vol": -16,
+            "role": "shimmer"
+          },
+          {
+            "id": "glint",
+            "preset": "pluck",
+            "pattern": "arp",
+            "minIntensity": 0.72,
+            "vol": -15,
+            "role": "melody"
+          }
+        ]
+      },
+      "combat": {
+        "mood": "heroic",
+        "scale": "mixolydian",
+        "key": "C",
+        "bpm": 124,
+        "progression": [
+          "I",
+          "bVII",
+          "IV",
+          "I"
+        ],
+        "layers": [
+          {
+            "id": "pad",
+            "preset": "pad",
+            "pattern": "chords",
             "minIntensity": 0,
-            "vol": -11
+            "vol": -16,
+            "role": "bed"
+          },
+          {
+            "id": "bass",
+            "preset": "saw-bass",
+            "pattern": "root8",
+            "minIntensity": 0,
+            "vol": -11,
+            "role": "foundation"
           },
           {
             "id": "drums",
             "preset": "kit",
             "pattern": "backbeat",
             "minIntensity": 0.2,
-            "vol": -10
+            "vol": -10,
+            "role": "drive"
           },
           {
             "id": "lead",
-            "preset": "square-lead",
+            "preset": "supersaw",
             "pattern": "arp",
             "minIntensity": 0.5,
-            "vol": -13
+            "vol": -13,
+            "role": "hook"
           }
         ]
       },
@@ -115,7 +301,7 @@
         "mood": "tense",
         "scale": "harmonic-minor",
         "key": "A",
-        "bpm": 152,
+        "bpm": 150,
         "progression": [
           "i",
           "VI",
@@ -128,36 +314,131 @@
             "preset": "pad",
             "pattern": "chords",
             "minIntensity": 0,
-            "vol": -14
+            "vol": -14,
+            "role": "bed"
           },
           {
             "id": "bass",
             "preset": "saw-bass",
             "pattern": "pulse",
             "minIntensity": 0,
-            "vol": -10
+            "vol": -10,
+            "role": "foundation"
           },
           {
             "id": "drums",
             "preset": "kit",
             "pattern": "four-floor",
             "minIntensity": 0,
-            "vol": -9
+            "vol": -9,
+            "role": "drive"
           },
           {
             "id": "lead",
             "preset": "supersaw",
             "pattern": "arp",
             "minIntensity": 0.35,
-            "vol": -12
+            "vol": -12,
+            "role": "hook"
+          }
+        ]
+      },
+      "finalboss": {
+        "mood": "heroic",
+        "scale": "major",
+        "key": "C",
+        "bpm": 132,
+        "progression": [
+          "I",
+          "V",
+          "vi",
+          "IV"
+        ],
+        "layers": [
+          {
+            "id": "pad",
+            "preset": "pad",
+            "pattern": "chords",
+            "minIntensity": 0,
+            "vol": -13,
+            "role": "bed"
+          },
+          {
+            "id": "bass",
+            "preset": "saw-bass",
+            "pattern": "pulse",
+            "minIntensity": 0,
+            "vol": -10,
+            "role": "foundation"
+          },
+          {
+            "id": "drums",
+            "preset": "kit",
+            "pattern": "four-floor",
+            "minIntensity": 0,
+            "vol": -9,
+            "role": "drive"
+          },
+          {
+            "id": "lead",
+            "preset": "supersaw",
+            "pattern": "arp",
+            "minIntensity": 0.2,
+            "vol": -12,
+            "role": "hook"
+          }
+        ]
+      },
+      "result": {
+        "mood": "warm",
+        "scale": "major",
+        "key": "F",
+        "bpm": 84,
+        "progression": [
+          "I",
+          "vi",
+          "IV",
+          "V"
+        ],
+        "layers": [
+          {
+            "id": "pad",
+            "preset": "pad",
+            "pattern": "chords",
+            "minIntensity": 0,
+            "vol": -13,
+            "role": "bed"
+          },
+          {
+            "id": "bass",
+            "preset": "triangle-bass",
+            "pattern": "root8",
+            "minIntensity": 0.35,
+            "vol": -14,
+            "role": "foundation"
+          },
+          {
+            "id": "lead",
+            "preset": "pluck",
+            "pattern": "arp",
+            "minIntensity": 0.6,
+            "vol": -15,
+            "role": "melody"
           }
         ]
       }
     },
     "sections": {
-      "explore": "explore",
+      "title": "title",
+      "village": "village",
+      "explore": "explore_cold",
+      "explore_cold": "explore_cold",
+      "explore_warm": "explore_warm",
+      "explore_mystic": "explore_mystic",
       "combat": "combat",
-      "boss": "boss"
+      "boss": "boss",
+      "finalboss": "finalboss",
+      "result": "result"
     }
   },
   "sfx": {
@@ -169,7 +450,7 @@
           "freq": 760,
           "to": 520,
           "dur": 0.06,
-          "vol": 0.32
+          "vol": 0.3
         }
       ]
     },
@@ -179,7 +460,7 @@
           "kind": "noise",
           "filter": 1400,
           "dur": 0.06,
-          "vol": 0.42
+          "vol": 0.4
         },
         {
           "kind": "tone",
@@ -196,32 +477,41 @@
           "kind": "noise",
           "filter": 3200,
           "dur": 0.05,
-          "vol": 0.5
-        },
-        {
-          "kind": "boom",
-          "freq": "C3",
-          "dur": 0.22,
-          "vol": 0.55,
-          "delay": 0.005
-        }
-      ]
-    },
-    "dodge": {
-      "layers": [
-        {
-          "kind": "noise",
-          "filter": 5200,
-          "dur": 0.14,
-          "vol": 0.32
+          "vol": 0.48
         },
         {
           "kind": "tone",
           "wave": "triangle",
-          "freq": 440,
-          "to": 900,
-          "dur": 0.12,
-          "vol": 0.28
+          "freq": 880,
+          "to": 1320,
+          "dur": 0.14,
+          "vol": 0.34,
+          "delay": 0.01
+        },
+        {
+          "kind": "boom",
+          "freq": "C3",
+          "dur": 0.2,
+          "vol": 0.4,
+          "delay": 0.02
+        }
+      ]
+    },
+    "hurt": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 700,
+          "dur": 0.18,
+          "vol": 0.5
+        },
+        {
+          "kind": "tone",
+          "wave": "sawtooth",
+          "freq": 180,
+          "to": 90,
+          "dur": 0.18,
+          "vol": 0.42
         }
       ]
     },
@@ -271,85 +561,6 @@
         }
       ]
     },
-    "skill": {
-      "layers": [
-        {
-          "kind": "fm",
-          "freq": 660,
-          "harmonicity": 2.5,
-          "modIndex": 10,
-          "dur": 0.3,
-          "vol": 0.4
-        },
-        {
-          "kind": "noise",
-          "filter": 2200,
-          "dur": 0.18,
-          "vol": 0.28,
-          "delay": 0.02
-        }
-      ]
-    },
-    "nova": {
-      "layers": [
-        {
-          "kind": "boom",
-          "freq": "C2",
-          "dur": 0.45,
-          "vol": 0.7
-        },
-        {
-          "kind": "noise",
-          "filter": 900,
-          "dur": 0.3,
-          "vol": 0.4,
-          "delay": 0.02
-        },
-        {
-          "kind": "tone",
-          "wave": "square",
-          "freq": 300,
-          "to": 120,
-          "dur": 0.2,
-          "vol": 0.3
-        }
-      ]
-    },
-    "hurt": {
-      "layers": [
-        {
-          "kind": "noise",
-          "filter": 700,
-          "dur": 0.18,
-          "vol": 0.5
-        },
-        {
-          "kind": "tone",
-          "wave": "sawtooth",
-          "freq": 180,
-          "to": 90,
-          "dur": 0.18,
-          "vol": 0.45
-        }
-      ]
-    },
-    "bossWarn": {
-      "layers": [
-        {
-          "kind": "metal",
-          "freq": 180,
-          "dur": 0.5,
-          "vol": 0.4
-        },
-        {
-          "kind": "boom",
-          "freq": "A1",
-          "dur": 0.6,
-          "vol": 0.6,
-          "delay": 0.05
-        }
-      ]
-    },
     "descend": {
       "layers": [
         {
@@ -374,6 +585,23 @@
           "dur": 0.2,
           "vol": 0.4,
           "delay": 0.2
+        }
+      ]
+    },
+    "bossWarn": {
+      "layers": [
+        {
+          "kind": "metal",
+          "freq": 180,
+          "dur": 0.5,
+          "vol": 0.4
+        },
+        {
+          "kind": "boom",
+          "freq": "A1",
+          "dur": 0.6,
+          "vol": 0.55,
+          "delay": 0.05
         }
       ]
     },
@@ -428,12 +656,708 @@
           "dur": 0.3,
           "vol": 0.45,
           "delay": 0.24
+        },
+        {
+          "kind": "fm",
+          "freq": 1760,
+          "harmonicity": 2,
+          "modIndex": 6,
+          "dur": 0.5,
+          "vol": 0.3,
+          "delay": 0.36
+        }
+      ]
+    },
+    "dodge": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 5200,
+          "dur": 0.14,
+          "vol": 0.3
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 440,
+          "to": 900,
+          "dur": 0.12,
+          "vol": 0.26
+        }
+      ]
+    },
+    "comet": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 4200,
+          "dur": 0.22,
+          "vol": 0.34
+        },
+        {
+          "kind": "tone",
+          "wave": "sawtooth",
+          "freq": 360,
+          "to": 760,
+          "dur": 0.2,
+          "vol": 0.3
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 720,
+          "dur": 0.12,
+          "vol": 0.24,
+          "delay": 0.1
+        }
+      ]
+    },
+    "blink": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 1200,
+          "to": 300,
+          "dur": 0.1,
+          "vol": 0.32
+        },
+        {
+          "kind": "boom",
+          "freq": "C3",
+          "dur": 0.18,
+          "vol": 0.4,
+          "delay": 0.06
+        },
+        {
+          "kind": "noise",
+          "filter": 2600,
+          "dur": 0.1,
+          "vol": 0.26,
+          "delay": 0.06
+        }
+      ]
+    },
+    "nova": {
+      "layers": [
+        {
+          "kind": "boom",
+          "freq": "C2",
+          "dur": 0.45,
+          "vol": 0.68
+        },
+        {
+          "kind": "noise",
+          "filter": 900,
+          "dur": 0.3,
+          "vol": 0.38,
+          "delay": 0.02
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 300,
+          "to": 120,
+          "dur": 0.2,
+          "vol": 0.3
+        }
+      ]
+    },
+    "scatter": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 3000,
+          "dur": 0.08,
+          "vol": 0.4
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 520,
+          "to": 380,
+          "dur": 0.1,
+          "vol": 0.32,
+          "delay": 0.01
+        }
+      ]
+    },
+    "charge": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "sawtooth",
+          "freq": 200,
+          "to": 900,
+          "dur": 0.5,
+          "vol": 0.3
+        },
+        {
+          "kind": "boom",
+          "freq": "G2",
+          "dur": 0.3,
+          "vol": 0.5,
+          "delay": 0.48
+        },
+        {
+          "kind": "noise",
+          "filter": 4000,
+          "dur": 0.12,
+          "vol": 0.3,
+          "delay": 0.48
+        }
+      ]
+    },
+    "turbo": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 440,
+          "to": 880,
+          "dur": 0.18,
+          "vol": 0.34
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 660,
+          "dur": 0.1,
+          "vol": 0.3,
+          "delay": 0.1
+        }
+      ]
+    },
+    "ward": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 523,
+          "harmonicity": 3,
+          "modIndex": 8,
+          "dur": 0.4,
+          "vol": 0.36
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 784,
+          "dur": 0.3,
+          "vol": 0.26,
+          "delay": 0.04
+        }
+      ]
+    },
+    "purify": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 660,
+          "harmonicity": 2.5,
+          "modIndex": 6,
+          "dur": 0.5,
+          "vol": 0.38
+        },
+        {
+          "kind": "noise",
+          "filter": 2200,
+          "dur": 0.3,
+          "vol": 0.24,
+          "delay": 0.02
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 990,
+          "to": 1320,
+          "dur": 0.3,
+          "vol": 0.24,
+          "delay": 0.06
+        }
+      ]
+    },
+    "ultGolden": {
+      "layers": [
+        {
+          "kind": "boom",
+          "freq": "C2",
+          "dur": 0.5,
+          "vol": 0.7
+        },
+        {
+          "kind": "fm",
+          "freq": 880,
+          "harmonicity": 2,
+          "modIndex": 10,
+          "dur": 0.5,
+          "vol": 0.4,
+          "delay": 0.02
+        },
+        {
+          "kind": "noise",
+          "filter": 1200,
+          "dur": 0.4,
+          "vol": 0.32,
+          "delay": 0.04
+        }
+      ]
+    },
+    "ultStar": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 1320,
+          "harmonicity": 3,
+          "modIndex": 12,
+          "dur": 0.5,
+          "vol": 0.42
+        },
+        {
+          "kind": "noise",
+          "filter": 5000,
+          "dur": 0.16,
+          "vol": 0.36,
+          "delay": 0
+        },
+        {
+          "kind": "boom",
+          "freq": "F2",
+          "dur": 0.4,
+          "vol": 0.5,
+          "delay": 0.08
+        }
+      ]
+    },
+    "skill": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 660,
+          "harmonicity": 2.5,
+          "modIndex": 10,
+          "dur": 0.3,
+          "vol": 0.4
+        },
+        {
+          "kind": "noise",
+          "filter": 2200,
+          "dur": 0.18,
+          "vol": 0.26,
+          "delay": 0.02
+        }
+      ]
+    },
+    "uiSelect": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 740,
+          "dur": 0.04,
+          "vol": 0.3
+        }
+      ]
+    },
+    "uiConfirm": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 660,
+          "dur": 0.05,
+          "vol": 0.34
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 990,
+          "dur": 0.08,
+          "vol": 0.34,
+          "delay": 0.05
+        }
+      ]
+    },
+    "uiCancel": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 520,
+          "to": 300,
+          "dur": 0.08,
+          "vol": 0.3
+        }
+      ]
+    },
+    "uiError": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "sawtooth",
+          "freq": 260,
+          "to": 180,
+          "dur": 0.14,
+          "vol": 0.34
+        }
+      ]
+    },
+    "equip": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 1800,
+          "dur": 0.07,
+          "vol": 0.34
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 330,
+          "dur": 0.1,
+          "vol": 0.3,
+          "delay": 0.02
+        }
+      ]
+    },
+    "upgrade": {
+      "layers": [
+        {
+          "kind": "metal",
+          "freq": 220,
+          "dur": 0.16,
+          "vol": 0.4
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 880,
+          "to": 1320,
+          "dur": 0.22,
+          "vol": 0.32,
+          "delay": 0.04
+        },
+        {
+          "kind": "fm",
+          "freq": 1320,
+          "harmonicity": 2,
+          "modIndex": 5,
+          "dur": 0.3,
+          "vol": 0.28,
+          "delay": 0.08
+        }
+      ]
+    },
+    "upgradeFail": {
+      "layers": [
+        {
+          "kind": "metal",
+          "freq": 140,
+          "dur": 0.14,
+          "vol": 0.34
+        },
+        {
+          "kind": "tone",
+          "wave": "sawtooth",
+          "freq": 240,
+          "to": 120,
+          "dur": 0.16,
+          "vol": 0.3,
+          "delay": 0.04
+        }
+      ]
+    },
+    "buy": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 880,
+          "dur": 0.05,
+          "vol": 0.36
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 1175,
+          "dur": 0.08,
+          "vol": 0.36,
+          "delay": 0.05
+        },
+        {
+          "kind": "noise",
+          "filter": 4200,
+          "dur": 0.05,
+          "vol": 0.2,
+          "delay": 0.02
+        }
+      ]
+    },
+    "sell": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 660,
+          "to": 880,
+          "dur": 0.06,
+          "vol": 0.32
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 440,
+          "dur": 0.07,
+          "vol": 0.3,
+          "delay": 0.05
+        }
+      ]
+    },
+    "questAccept": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 523,
+          "harmonicity": 2,
+          "modIndex": 4,
+          "dur": 0.2,
+          "vol": 0.32
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 784,
+          "dur": 0.16,
+          "vol": 0.26,
+          "delay": 0.06
+        }
+      ]
+    },
+    "questDone": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 659,
+          "dur": 0.1,
+          "vol": 0.4
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 880,
+          "dur": 0.1,
+          "vol": 0.4,
+          "delay": 0.08
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 1175,
+          "dur": 0.14,
+          "vol": 0.4,
+          "delay": 0.16
+        },
+        {
+          "kind": "fm",
+          "freq": 1568,
+          "harmonicity": 2,
+          "modIndex": 6,
+          "dur": 0.3,
+          "vol": 0.28,
+          "delay": 0.24
+        }
+      ]
+    },
+    "learnSkill": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 440,
+          "harmonicity": 3,
+          "modIndex": 8,
+          "dur": 0.3,
+          "vol": 0.36
+        },
+        {
+          "kind": "fm",
+          "freq": 660,
+          "harmonicity": 3,
+          "modIndex": 8,
+          "dur": 0.3,
+          "vol": 0.32,
+          "delay": 0.08
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 1320,
+          "dur": 0.26,
+          "vol": 0.24,
+          "delay": 0.16
+        }
+      ]
+    },
+    "statUp": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 523,
+          "to": 784,
+          "dur": 0.12,
+          "vol": 0.34
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 1047,
+          "dur": 0.12,
+          "vol": 0.3,
+          "delay": 0.08
+        }
+      ]
+    },
+    "doorLock": {
+      "layers": [
+        {
+          "kind": "metal",
+          "freq": 160,
+          "dur": 0.12,
+          "vol": 0.36
+        },
+        {
+          "kind": "boom",
+          "freq": "C2",
+          "dur": 0.16,
+          "vol": 0.4,
+          "delay": 0.03
+        }
+      ]
+    },
+    "doorOpen": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 1200,
+          "dur": 0.22,
+          "vol": 0.3
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 392,
+          "to": 587,
+          "dur": 0.24,
+          "vol": 0.3,
+          "delay": 0.04
+        },
+        {
+          "kind": "fm",
+          "freq": 880,
+          "harmonicity": 2,
+          "modIndex": 4,
+          "dur": 0.2,
+          "vol": 0.24,
+          "delay": 0.12
+        }
+      ]
+    },
+    "secret": {
+      "layers": [
+        {
+          "kind": "fm",
+          "freq": 784,
+          "harmonicity": 2.5,
+          "modIndex": 6,
+          "dur": 0.3,
+          "vol": 0.38
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 1175,
+          "to": 1568,
+          "dur": 0.3,
+          "vol": 0.3,
+          "delay": 0.06
+        },
+        {
+          "kind": "fm",
+          "freq": 1568,
+          "harmonicity": 3,
+          "modIndex": 5,
+          "dur": 0.4,
+          "vol": 0.26,
+          "delay": 0.16
+        }
+      ]
+    },
+    "treasure": {
+      "layers": [
+        {
+          "kind": "boom",
+          "freq": "C2",
+          "dur": 0.2,
+          "vol": 0.5
+        },
+        {
+          "kind": "noise",
+          "filter": 3600,
+          "dur": 0.06,
+          "vol": 0.28,
+          "delay": 0.04
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 988,
+          "dur": 0.1,
+          "vol": 0.36,
+          "delay": 0.1
+        },
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 1319,
+          "dur": 0.16,
+          "vol": 0.36,
+          "delay": 0.2
+        }
+      ]
+    },
+    "minimap": {
+      "layers": [
+        {
+          "kind": "tone",
+          "wave": "square",
+          "freq": 1320,
+          "dur": 0.04,
+          "vol": 0.26
+        }
+      ]
+    },
+    "transition": {
+      "layers": [
+        {
+          "kind": "noise",
+          "filter": 3000,
+          "dur": 0.2,
+          "vol": 0.24
+        },
+        {
+          "kind": "tone",
+          "wave": "triangle",
+          "freq": 392,
+          "to": 784,
+          "dur": 0.26,
+          "vol": 0.26
         }
       ]
     }
   },
   "balanceConfig": {
     "maxReverbDecay": 4,
-    "bpmTolerance": 12
+    "bpmTolerance": 12,
+    "maxVoices": 16
   }
 }

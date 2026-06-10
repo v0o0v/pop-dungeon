@@ -43,8 +43,69 @@
 <!-- 트윈스틱/아날로그 이동 + 능력 런타임 -->
 <script src="engine/joystickkit.js"></script>
 <script src="engine/abilitykit.js"></script>
-<!-- 게임 데이터(스킬·아이템·사운드 단일 소스) → 게임 -->
-<script src="data.js"></script>
-<script src="game.js"></script>
+<!-- 게임 데이터(스킬·아이템·사운드 단일 소스) — data/ 분할(전역 누적, window.POP_*) -->
+<script src="data/style.data.js"></script>
+<script src="data/abilities.data.js"></script>
+<script src="data/items.data.js"></script>
+<script src="data/audio.data.js"></script>
+<!-- Phase 1 신규 데이터 모듈(월드·NPC·퀘스트·도감·방 템플릿) -->
+<script src="data/world.data.js"></script>
+<script src="data/npcs.data.js"></script>
+<script src="data/quests.data.js"></script>
+<script src="data/codex.data.js"></script>
+<script src="data/floors/templates.js"></script>
+<!-- Phase 3 핸드 디자인 100층 (region 01~10) — Dungeon findFloorData가 수집 -->
+<script src="data/floors/region-01.floors.js"></script>
+<script src="data/floors/region-02.floors.js"></script>
+<script src="data/floors/region-03.floors.js"></script>
+<script src="data/floors/region-04.floors.js"></script>
+<script src="data/floors/region-05.floors.js"></script>
+<script src="data/floors/region-06.floors.js"></script>
+<script src="data/floors/region-07.floors.js"></script>
+<script src="data/floors/region-08.floors.js"></script>
+<script src="data/floors/region-09.floors.js"></script>
+<script src="data/floors/region-10.floors.js"></script>
+<!-- floors 샘플 층(살아있는 참조) — Dungeon 최후 폴백 데이터원(별도 전역, 중복 없음) -->
+<script src="data/floors/region-01.sample.js"></script>
+<!-- 게임 코드 — game/ 모듈 분할(전역 누적 window.PD, file:// 안전).
+     로드 순서: core(상수·PRNG·상태·헬퍼·config) → art/story/stats → scenes → PD.boot() -->
+<script src="game/core.js"></script>
+<script src="game/art.js"></script>
+<script src="game/story.js"></script>
+<script src="game/stats.js"></script>
+<!-- 능력 패시브 배선(stats.js 소스[4] 계약: PD.getPassiveEffects) + 세이브 v2 -->
+<script src="game/abilities-wiring.js"></script>
+<script src="game/save.js"></script>
+<!-- 던전 좌표계: Room/Maze 추상화(스파이크) + 타일 물리·렌더 + floor→방 그래프 어댑터(L6a) -->
+<script src="game/room.js"></script>
+<script src="game/tiles.js"></script>
+<script src="game/roomgraph.js"></script>
+<!-- 미니맵 렌더러(L6c) — 방 그래프 미니맵(HUD 오버레이) -->
+<script src="game/minimap.js"></script>
+<script src="game/scenes/Boot.js"></script>
+<script src="game/scenes/Title.js"></script>
+<!-- 던전 본체(L6a — GameScene 대체: ARENA→room.bounds 좌표계 + 타일 물리) -->
+<script src="game/scenes/Dungeon.js"></script>
+<script src="game/scenes/HUD.js"></script>
+<script src="game/scenes/Result.js"></script>
+<!-- Phase 0.5 미로 런타임 스파이크 씬(?spike=1) — 신규 씬, 본편 비침습 -->
+<script src="game/scenes/SpikeMaze.js"></script>
+<script src="game/scenes/WorldMap.js"></script>
+<!-- 마을 기능 UI 모듈(L5) — Modal 기반 모달 6종 + NPC 대화. Village 보다 먼저 로드 -->
+<script src="game/ui/Modal.js"></script>
+<script src="game/ui/Inventory.js"></script>
+<script src="game/ui/Shop.js"></script>
+<script src="game/ui/Forge.js"></script>
+<script src="game/ui/SkillTree.js"></script>
+<script src="game/ui/StatAlloc.js"></script>
+<script src="game/ui/QuestBoard.js"></script>
+<script src="game/ui/Codex.js"></script>
+<script src="game/ui/Dialogue.js"></script>
+<!-- 마을 허브 씬(L5) — 솔뫼 마을 NPC 6종 + 출정 -->
+<script src="game/scenes/Village.js"></script>
+<!-- Capacitor 네이티브 백버튼 정책 (브라우저에서는 no-op) -->
+<script src="game/native.js"></script>
+<!-- 모든 씬 클래스 등록 후 부팅 트리거(인라인 — file:// 안전) -->
+<script>window.PD.boot();</script>
 </body>
 </html>

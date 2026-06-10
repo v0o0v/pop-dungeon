@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  팡팡 던전 스플래시 — torchlit-pop-dungeon 팔레트
+  bg: #10131f (dungeon_void), 팝거너 민트: #3fd6a8, 횃불: #ffa53a
+  코드 생성 오리지널(CC0/IP-safe) — 외부 이미지 파일 0개
+-->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- 배경: dungeon_void -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#10131f" />
+        </shape>
+    </item>
+
+    <!-- 팝거너 픽셀 캐릭터 (단순화 벡터 — 팔레트 컬러만 사용) -->
+    <item
+        android:gravity="center"
+        android:width="96dp"
+        android:height="96dp">
+        <layer-list>
+            <!-- 몸통 (민트) -->
+            <item android:top="8dp" android:bottom="0dp" android:left="8dp" android:right="8dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="#3fd6a8" />
+                    <corners android:radius="6dp" />
+                </shape>
+            </item>
+            <!-- 눈 흰자 왼쪽 -->
+            <item android:top="20dp" android:bottom="40dp" android:left="16dp" android:right="56dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="#f0ede0" />
+                    <corners android:radius="2dp" />
+                </shape>
+            </item>
+            <!-- 눈 흰자 오른쪽 -->
+            <item android:top="20dp" android:bottom="40dp" android:left="56dp" android:right="16dp">
+                <shape android:shape="rectangle">
+                    <solid android:color="#f0ede0" />
+                    <corners android:radius="2dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+
+    <!-- 앱 이름 텍스트 영역 아래 — Android drawable 텍스트 미지원이므로 생략,
+         실제 텍스트는 SplashActivity 레이아웃에서 처리 -->
+
+</layer-list>
